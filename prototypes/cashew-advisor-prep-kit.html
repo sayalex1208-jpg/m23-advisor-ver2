@@ -1,0 +1,531 @@
+<title>Cashew Advisor Prep Kit</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Khmer:wght@400;600&display=swap');
+
+  :root {
+    --paper: #f2efe3;
+    --panel: #fbf8ef;
+    --ink: #26261c;
+    --ink-soft: #5c5644;
+    --accent: #bd4111;
+    --accent-ink: #fff6ee;
+    --leaf: #3c5a38;
+    --leaf-ink: #eef4ea;
+    --line: #d9cfb6;
+    --highlight-bg: #eeddbd;
+    --warn-bg: #f6ddc4;
+    --warn-line: #d99552;
+    --ok-bg: #e2ead9;
+    --ok-line: #7fa06e;
+    --shadow: 0 1px 0 rgba(38,38,28,0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1c1a13;
+      --panel: #262219;
+      --ink: #ece5d3;
+      --ink-soft: #b3a98d;
+      --accent: #e97a3d;
+      --accent-ink: #241206;
+      --leaf: #8ab179;
+      --leaf-ink: #101a0d;
+      --line: #3c3627;
+      --highlight-bg: #3a2f1c;
+      --warn-bg: #3c2b18;
+      --warn-line: #a86a34;
+      --ok-bg: #24301f;
+      --ok-line: #5d7d50;
+      --shadow: 0 1px 0 rgba(0,0,0,0.3);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #1c1a13;
+    --panel: #262219;
+    --ink: #ece5d3;
+    --ink-soft: #b3a98d;
+    --accent: #e97a3d;
+    --accent-ink: #241206;
+    --leaf: #8ab179;
+    --leaf-ink: #101a0d;
+    --line: #3c3627;
+    --highlight-bg: #3a2f1c;
+    --warn-bg: #3c2b18;
+    --warn-line: #a86a34;
+    --ok-bg: #24301f;
+    --ok-line: #5d7d50;
+    --shadow: 0 1px 0 rgba(0,0,0,0.3);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Work Sans', 'Noto Sans Khmer', sans-serif;
+    line-height: 1.55;
+    padding: 0 0 6rem;
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 0;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Fraunces', 'Noto Sans Khmer', serif;
+    font-weight: 600;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin: 0 0 1rem;
+    padding-top: 0.25rem;
+  }
+
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0 0 0.4rem;
+  }
+
+  p { margin: 0 0 0.9rem; }
+  p:last-child { margin-bottom: 0; }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.9rem;
+  }
+
+  .hero {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 1.75rem;
+    margin-bottom: 2.25rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 4.5vw, 2.9rem);
+    margin: 0 0 0.6rem;
+    line-height: 1.05;
+  }
+
+  .dek {
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin-bottom: 1.1rem;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+  }
+
+  .meta-row span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 0.25rem 0.6rem;
+    background: var(--panel);
+  }
+
+  section { margin-bottom: 2.75rem; }
+
+  .verdict-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--ok-bg);
+    color: var(--ink);
+    border: 1px solid var(--ok-line);
+    border-radius: 3px;
+    padding: 0.35rem 0.7rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-top: 1.2rem;
+    box-shadow: var(--shadow);
+  }
+
+  .stat {
+    background: var(--panel);
+    padding: 1rem 1.1rem;
+  }
+
+  .stat .n {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+
+  .stat .d {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+
+  .callout {
+    border: 1px solid var(--warn-line);
+    background: var(--warn-bg);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    margin: 0 0 1.2rem;
+  }
+
+  .callout .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .pitch-line {
+    font-family: 'Fraunces', 'Noto Sans Khmer', serif;
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.4;
+    border-left: 3px solid var(--accent);
+    padding: 0.2rem 0 0.2rem 1.1rem;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
+  .pitch-note {
+    margin-top: 0.9rem;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+
+  .canvas-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: auto auto auto;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+
+  .cell {
+    background: var(--panel);
+    padding: 0.95rem 1rem;
+  }
+
+  .cell h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 500;
+    margin-bottom: 0.55rem;
+  }
+
+  .cell p, .cell ul { font-size: 0.87rem; }
+  .cell ul { margin: 0; padding-left: 1.05rem; }
+  .cell li { margin-bottom: 0.35rem; }
+  .cell li:last-child { margin-bottom: 0; }
+
+  .cell.uvp { background: var(--highlight-bg); }
+  .cell.uvp h3 { color: var(--accent); }
+
+  .problem { grid-column: 1; grid-row: 1; }
+  .alternatives { grid-column: 1; grid-row: 2; }
+  .solution { grid-column: 2; grid-row: 1; }
+  .metrics { grid-column: 2; grid-row: 2; }
+  .uvp { grid-column: 3; grid-row: 1 / 3; display: flex; flex-direction: column; justify-content: center; }
+  .advantage { grid-column: 4; grid-row: 1; }
+  .channels { grid-column: 4; grid-row: 2; }
+  .segments { grid-column: 5; grid-row: 1; }
+  .adopters { grid-column: 5; grid-row: 2; }
+  .cost { grid-column: 1 / 4; grid-row: 3; }
+  .revenue { grid-column: 4 / 6; grid-row: 3; }
+
+  @media (max-width: 760px) {
+    .canvas-grid { grid-template-columns: 1fr; }
+    .canvas-grid .cell { grid-column: auto !important; grid-row: auto !important; }
+  }
+
+  .phases {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: phase;
+    border-left: 1px solid var(--line);
+  }
+
+  .phase {
+    position: relative;
+    padding: 0 0 1.9rem 1.75rem;
+  }
+  .phase:last-child { padding-bottom: 0; }
+
+  .phase::before {
+    counter-increment: phase;
+    content: counter(phase, decimal-leading-zero);
+    position: absolute;
+    left: -0.72rem;
+    top: 0.05rem;
+    background: var(--paper);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    width: 1.4rem;
+    text-align: center;
+  }
+
+  .phase h3 {
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .phase .when {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    display: block;
+    margin-bottom: 0.55rem;
+  }
+
+  .phase ul { margin: 0; padding-left: 1.1rem; font-size: 0.92rem; }
+  .phase li { margin-bottom: 0.35rem; }
+  .phase li:last-child { margin-bottom: 0; }
+
+  footer.sources {
+    border-top: 1px solid var(--line);
+    padding-top: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+  }
+
+  footer.sources h2 {
+    font-size: 0.95rem;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    margin-bottom: 0.7rem;
+  }
+
+  footer.sources ol {
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+
+  footer.sources li { margin-bottom: 0.35rem; }
+
+  footer.sources a { color: var(--leaf); text-decoration: none; border-bottom: 1px solid var(--ok-line); }
+  footer.sources a:hover { color: var(--accent); }
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <p class="eyebrow">AIM · FirstWave · Build Week Prep</p>
+    <h1>Cashew Advisor Prep Kit</h1>
+    <p class="dek">A Khmer-language AI advisor for M23 cashew smallholders — the pain-point check, the sharper pitch, the Lean Canvas, and what to actually build tomorrow.</p>
+    <div class="meta-row">
+      <span>Orientation &amp; Build Week — Sun 30 Aug 2026, CADT</span>
+      <span>Shortlisted: Top 70 of 295</span>
+    </div>
+  </header>
+
+  <section class="verdict">
+    <span class="verdict-badge">Verdict — real pain point, better evidenced than most entries will bring</span>
+    <p>The gap isn't invented. Cambodia's cashew sector is growing fast while the advisory infrastructure around it hasn't caught up — that mismatch is your problem statement, and it's citable.</p>
+    <div class="stat-grid">
+      <div class="stat"><span class="n">5 / 120</span><span class="d">surveyed cashew farmers had a written buyer agreement — nearly all trade runs on verbal deals (ILO, 2024)</span></div>
+      <div class="stat"><span class="n">$1.44B</span><span class="d">Cambodia's cashew export value in the first four months of 2026 alone (AKP)</span></div>
+      <div class="stat"><span class="n">1M tons</span><span class="d">national cashew output Cambodia is targeting for 2026</span></div>
+      <div class="stat"><span class="n">2022–27</span><span class="d">the National Cashew Policy's active window — government already treats this as strategic</span></div>
+    </div>
+  </section>
+
+  <section class="pitch-check">
+    <h2>Before you pitch it as "nobody's solving this"</h2>
+    <div class="callout">
+      <span class="label">Reality check</span>
+      <p>Don't open with "no one's building AI advisors for farmers" — a judge who's seen this space will hear it as under-researched. Digital Green's <strong>FarmerChat</strong> already does this at real scale (voice + text advice over WhatsApp/Telegram, cost per farmer down from $35 to under $1), and the academic literature on it is public. That category exists and is well-funded.</p>
+      <p>What doesn't exist is a Khmer-first, M23-specific version with a real distribution channel in Cambodia. That's the actual pitch — narrower, truer, and harder for a judge to poke a hole in.</p>
+    </div>
+    <p class="pitch-line">A Khmer-language AI advisor that walks M23 cashew smallholders through their exact planting-to-harvest calendar — verified with Angkor Green's agronomists, distributed through the input shops farmers already trust.</p>
+    <p class="pitch-note">Note: "Claim Your Profile" is on tomorrow's agenda at 9:15 — have a project name picked before then.</p>
+  </section>
+
+  <section class="canvas">
+    <h2>Lean Canvas — draft to bring into the 10:40 worksheet</h2>
+    <div class="canvas-grid">
+      <div class="cell problem">
+        <h3>Problem</h3>
+        <ul>
+          <li>No trustworthy, real-time M23-specific guidance — farmers rely on neighbors, retailer guesswork, or nothing</li>
+          <li>Existing digital tools are generic: multi-crop, not Khmer-first, not M23-tuned</li>
+          <li>Price/market information asymmetry at harvest and sale time</li>
+        </ul>
+      </div>
+      <div class="cell alternatives">
+        <h3>Existing alternatives</h3>
+        <ul>
+          <li>Asking neighbors or the input shop clerk</li>
+          <li>Trial and error, last year's routine</li>
+          <li>Non-Khmer YouTube content</li>
+        </ul>
+      </div>
+      <div class="cell solution">
+        <h3>Solution</h3>
+        <ul>
+          <li>Khmer text + voice chatbot covering the full M23 lifecycle: land prep, planting, fertilizer/pest schedule, pruning, harvest, post-harvest</li>
+          <li>Content curated with Angkor Green</li>
+        </ul>
+      </div>
+      <div class="cell metrics">
+        <h3>Key metrics</h3>
+        <ul>
+          <li>Weekly active farmers</li>
+          <li>% answered vs. "don't know"</li>
+          <li>Retailer referrals into the bot</li>
+        </ul>
+      </div>
+      <div class="cell uvp">
+        <h3>Unique value proposition</h3>
+        <p>Your cashew season, explained in Khmer, one variety at a time — not a generic crop bot translated after the fact.</p>
+      </div>
+      <div class="cell advantage">
+        <h3>Unfair advantage</h3>
+        <ul>
+          <li>Real relationship with Angkor Green</li>
+          <li>Existing retail customer base as day-one distribution</li>
+          <li>Own agribusiness/farm background</li>
+        </ul>
+      </div>
+      <div class="cell channels">
+        <h3>Channels</h3>
+        <ul>
+          <li>Input retail shops as referral points</li>
+          <li>Telegram / Messenger — no new app to install</li>
+        </ul>
+      </div>
+      <div class="cell segments">
+        <h3>Customer segments</h3>
+        <ul>
+          <li>Smallholder M23 cashew farmers in Cambodia</li>
+        </ul>
+      </div>
+      <div class="cell adopters">
+        <h3>Early adopters</h3>
+        <ul>
+          <li>Existing customers of his own agri-input shop</li>
+        </ul>
+      </div>
+      <div class="cell cost">
+        <h3>Cost structure</h3>
+        <ul>
+          <li>LLM/API usage, content curation time, bot hosting, partner relationship upkeep with Angkor Green</li>
+        </ul>
+      </div>
+      <div class="cell revenue">
+        <h3>Revenue streams</h3>
+        <ul>
+          <li>Freemium bot → premium bundled with input purchases; sponsorship from ag-input companies; longer-term, anonymized demand insight for suppliers</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="build-plan">
+    <h2>Build plan — Claude Pro + Lovable</h2>
+    <ol class="phases">
+      <li class="phase">
+        <span class="when">Before / during orientation — Sun 30 Aug, morning</span>
+        <h3>Walk in refined, not blank</h3>
+        <ul>
+          <li>Bring this canvas into the 10:40–12:00 worksheet + mini pitch block</li>
+          <li>Pick a project name before "Claim Your Profile" at 9:15</li>
+          <li>Have the one-line pitch memorized for the mini pitch challenge</li>
+        </ul>
+      </li>
+      <li class="phase">
+        <span class="when">Knowledge base — Claude Pro, before the demo build</span>
+        <h3>Compile the M23 lifecycle</h3>
+        <ul>
+          <li>In this Claude project, log each stage — nursery/planting, vegetative growth, flowering, fruiting, harvest, post-harvest — with common issues and fertilizer/pest timing for each</li>
+          <li>Draft it in Khmer directly; Claude can check phrasing, but verify agronomy accuracy against real M23 practice, ideally with Angkor Green before the demo locks</li>
+          <li>Output a structured stage-by-stage doc — this becomes the chatbot's grounding content</li>
+        </ul>
+      </li>
+      <li class="phase">
+        <span class="when">Build — Lovable, afternoon session 13:00–16:00</span>
+        <h3>Build the narrowest version that works</h3>
+        <ul>
+          <li>Describe a Khmer chat interface to Lovable that answers M23 questions using the knowledge base as grounding content</li>
+          <li>One crop, one variety, one language — the FarmerChat research above shows even well-funded teams do best scoped tight</li>
+          <li>Two screens is enough: the chat, and a simple visual growing-stage reference</li>
+        </ul>
+      </li>
+      <li class="phase">
+        <span class="when">Before judging</span>
+        <h3>Pressure-test it</h3>
+        <ul>
+          <li>Run 8–10 realistic farmer questions in Khmer, check answers against real practice, note where it goes vague</li>
+          <li>Record a backup demo video/screenshots in case live wifi fails</li>
+          <li>Rehearse tying the demo back to the retail channel + Angkor Green relationship as the "why us"</li>
+        </ul>
+      </li>
+      <li class="phase">
+        <span class="when">After Build Week — back in this chat</span>
+        <h3>Turn it into the pitch deck</h3>
+        <ul>
+          <li>Problem (cite the stats above), why now (export boom + National Cashew Policy), solution (demo), traction/why me (retail channel, Angkor Green, Finclusion 3rd place), the ask</li>
+        </ul>
+      </li>
+    </ol>
+  </section>
+
+  <footer class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li><a href="https://www.ilo.org/sites/default/files/2024-11/Brief%20cashew%20nut.pdf">ILO — Addressing informality in the cashew nut industry (2024)</a></li>
+      <li><a href="https://farmonaut.com/asia/agriculture-in-cambodia-2026-growth-challenges">Farmonaut — Agriculture in Cambodia: 2026 Growth &amp; Challenges</a></li>
+      <li><a href="https://www.akp.gov.kh/post/detail/370792">AKP — Cambodia's Cashew Exports Value US$1.44 Billion in First Four Months of 2026</a></li>
+      <li><a href="https://www.facebook.com/kptdaily.en/posts/cambodia-eyes-up-to-1-million-tons-of-cashew-output-in-2026-cambodia-is-projecte/122161818296952209/">Cambodia eyes up to 1 million tons of cashew output in 2026</a></li>
+      <li><a href="https://data.opendevelopmentcambodia.net/en/dataset/fd2e0105-7aef-4190-a625-3b139f7c50ca/resource/4a6f697d-c94d-42dc-9b5a-f7d4ec7b618d/download/national_cashew_policy_2022_-_2027__13.01.2023.pdf">National Cashew Policy 2022–2027 (Royal Government of Cambodia)</a></li>
+      <li><a href="https://www.digitalgreen.org/farmerchat">Digital Green — FarmerChat</a></li>
+      <li><a href="https://arxiv.org/html/2409.08916v2">Farmer.Chat: Scaling AI-Powered Agricultural Services for Smallholder Farmers (arXiv)</a></li>
+      <li><a href="https://lovable.dev/vibecoding">Lovable — Vibe Coding</a></li>
+    </ol>
+  </footer>
+
+</div>

@@ -1,0 +1,17 @@
+{
+  "name": "ជំនួយការចន្ទី M23 · M23 Cashew Advisor",
+  "short_name": "ចន្ទី M23",
+  "description": "ជំនួយការសម្រាប់កសិករដាំចន្ទី M23 · Advisor for M23 cashew farmers",
+  "lang": "km",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f6f0",
+  "theme_color": "#0f6b4a",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

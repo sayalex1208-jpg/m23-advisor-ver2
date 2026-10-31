@@ -1,0 +1,1252 @@
+<title>M23 Cashew Advisor</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Manrope', 'Noto Sans Khmer', 'sans-serif'],
+          khmer: ['Noto Sans Khmer', 'Manrope', 'sans-serif'],
+        },
+        colors: {
+          base: '#0f172a',      /* slate-900 — desktop backdrop */
+          app: '#171717',       /* neutral-900 — phone screen */
+          surface: '#232323',   /* neutral-800-ish — cards, bubbles */
+          surface2: '#2b2b2b',
+          brand: '#065f46',     /* emerald-800 — filled accent */
+          brandBright: '#34d399', /* emerald-400 — text/icon accent */
+          ink: '#fafaf9',
+          inkMuted: '#a8a29e',
+          line: '#3f3f46',
+          warn: '#f59e0b',
+          err: '#f87171',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  :root { color-scheme: dark; }
+  * { -webkit-tap-highlight-color: transparent; }
+  body { background: #0f172a; color: #fafaf9; }
+  .khmer { font-family: 'Noto Sans Khmer', 'Manrope', sans-serif; }
+  .stepper::-webkit-scrollbar { display: none; }
+  .stepper { -ms-overflow-style: none; scrollbar-width: none; }
+  .device-frame {
+    box-shadow: 0 0 0 10px #0a0a0a, 0 0 0 12px #262626, 0 30px 60px -20px rgba(0,0,0,0.6);
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.35); }
+    100% { box-shadow: 0 0 0 8px rgba(52,211,153,0); }
+  }
+  .stage-active-ring { animation: pulse-ring 2.2s ease-out infinite; }
+  @keyframes dot-bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: .5; }
+    40% { transform: translateY(-3px); opacity: 1; }
+  }
+  .think-dot { animation: dot-bounce 1.2s infinite ease-in-out; }
+  .think-dot:nth-child(2) { animation-delay: .15s; }
+  .think-dot:nth-child(3) { animation-delay: .3s; }
+  input::placeholder { color: #a8a29e; }
+  .fade-in { animation: fadeIn .25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="min-h-screen w-full flex items-center justify-center bg-base py-10 px-4 font-sans">
+
+  <!-- ===================== DEVICE FRAME ===================== -->
+  <div class="device-frame relative w-full max-w-[480px] h-[860px] max-h-[92vh] rounded-[2.25rem] overflow-hidden bg-app flex flex-col">
+
+    <!-- ===================== 1. TOP BAR ===================== -->
+    <header class="shrink-0 bg-app border-b border-line px-4 pt-5 pb-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5" id="brandZone">
+          <div class="w-9 h-9 rounded-xl bg-brand/25 border border-brand/40 flex items-center justify-center text-brandBright">
+            <!-- leaf mark -->
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14c0-6.5 5-11 15-11 0 10-4.5 15-11 15-2.2 0-4-1.8-4-4z"/><path d="M4 20c3-3 6-6 15-15"/></svg>
+          </div>
+          <div class="leading-tight">
+            <div class="text-[15px] font-bold tracking-tight" id="appNameEn">M23 Advisor <span class="text-inkMuted font-medium">· draft name</span></div>
+            <div class="khmer text-[12px] text-inkMuted" id="appNameKm">ជំនួយការស្រែស្វាយចន្ទី M23</div>
+          </div>
+        </div>
+
+        <!-- language toggle indicator -->
+        <button id="langToggle" class="relative flex items-center bg-surface border border-line rounded-full p-1 text-[11px] font-semibold" aria-label="Toggle language">
+          <span id="langPillKm" class="relative z-10 khmer px-2.5 py-1 rounded-full transition-colors text-inkMuted">ខ្មែរ</span>
+          <span id="langPillEn" class="relative z-10 px-2.5 py-1 rounded-full transition-colors text-app bg-brandBright">EN</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ===================== 2. M23 LIFE CYCLE TRACKER ===================== -->
+    <section class="shrink-0 bg-app px-4 py-4 border-b border-line">
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-[11px] font-semibold tracking-wide uppercase text-inkMuted">M23 Life Cycle · <span class="khmer normal-case">វដ្តជីវិតដើមស្វាយចន្ទី</span></p>
+        <p class="text-[11px] font-semibold text-brandBright">Day 118 <span class="text-inkMuted font-normal">of ~150</span></p>
+      </div>
+
+      <div id="stepperTrack" class="stepper flex items-start gap-0 overflow-x-auto pb-1"></div>
+    </section>
+
+    <!-- ===================== 3. AI CHAT ===================== -->
+    <section class="flex-1 min-h-0 flex flex-col bg-app">
+      <div class="px-4 pt-3 pb-1 flex items-center justify-between">
+        <p class="text-[11px] font-semibold tracking-wide uppercase text-inkMuted">AI Helper · <span class="khmer normal-case">ជំនួយការ AI</span></p>
+        <span id="statusPill" class="flex items-center gap-1 text-[11px] text-inkMuted font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-inkMuted"></span> checking…
+        </span>
+      </div>
+
+      <div id="chatWindow" class="flex-1 overflow-y-auto px-4 py-3 space-y-4"></div>
+
+      <!-- ===== unavailable banner (hidden by default) ===== -->
+      <div id="unavailableBanner" class="hidden shrink-0 mx-3 mb-2 px-3 py-2.5 rounded-xl bg-warn/10 border border-warn/25">
+        <p class="khmer text-[12px] text-ink leading-snug">AI ផ្ទាល់ដំណើរការតែនៅពេលបើកទំព័រនេះក្នុង Claude ប៉ុណ្ណោះ។ សូមចុចប៊ូតុងខាងក្រោមម្តងទៀត។</p>
+        <p class="text-[11px] text-inkMuted leading-snug mt-0.5">Live AI only works when this page is opened inside Claude. Tap retry below.</p>
+        <button id="retryBtn" class="mt-2 text-[11px] font-semibold text-app bg-warn px-3 py-1.5 rounded-lg">Retry · ព្យាយាមម្តងទៀត</button>
+      </div>
+
+      <!-- ===== input bar ===== -->
+      <div class="shrink-0 px-3 pb-4 pt-2 bg-app border-t border-line">
+        <div class="flex items-center gap-2 bg-surface border border-line rounded-2xl px-2 py-2">
+          <input id="photoInput" type="file" accept="image/*" class="hidden" />
+          <button id="cameraBtn" class="w-9 h-9 rounded-xl flex items-center justify-center text-inkMuted disabled:opacity-30" aria-label="Attach photo">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2.5"/><circle cx="12" cy="13" r="3.4"/><path d="M8.5 6l1.2-2h4.6l1.2 2"/></svg>
+          </button>
+          <input id="chatInput" type="text" class="flex-1 khmer text-[13px] bg-transparent outline-none text-ink placeholder:text-inkMuted min-w-0" placeholder="សួរអំពីដើមស្វាយចន្ទី M23 របស់អ្នក..." disabled />
+          <button id="micBtn" class="w-9 h-9 rounded-xl flex items-center justify-center text-inkMuted opacity-40" aria-label="Voice input (coming soon)" title="Voice — coming soon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="9" y1="22" x2="15" y2="22"/></svg>
+          </button>
+          <button id="sendBtn" class="w-9 h-9 rounded-xl flex items-center justify-center bg-brand text-brandBright disabled:opacity-30" aria-label="Send" disabled>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+        <p id="toast" class="hidden text-[11px] text-warn mt-1.5 px-1"></p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  // ===================== KNOWLEDGE BASE (condensed, grounds every AI call) =====================
+  // Sources: Chheang's photographed Khmer agronomy reference book (book chapter refs noted),
+  // except Fruit Development which is external general research (explicitly marked as such).
+  const KNOWLEDGE_BASE = `SOURCE NOTE: This reference is the M23 Cashew Advisor knowledge base v2.1 (built 2026-10-23). Each entry was checked against a physical Khmer-language cashew agronomy book the farmer's team photographed; the book page is given as "p.X" — treat entries as the credible primary source and cite the page when relevant (e.g. "សៀវភៅ ទំព័រ ៥៥"). The FRUIT DEVELOPMENT section at the end is GENERAL RESEARCH, not from the book, and you must say so plainly whenever you use it. Months are written as "month N" (ខែN) as in the book.
+
+Entries marked [VERIFY NUMBERS] contain doses, timings or figures that have not yet been independently confirmed by a native speaker or agronomist: give the approach, and tell the farmer to confirm exact amounts with a local agronomist or trusted input shop before applying. Never state those numbers with more confidence than that.
+
+== A. ពូជ និងជីវសាស្ត្រចន្ទី · Varieties & Biology ==
+#31
+Q: តើផ្កាឈ្មោលនិងផ្កាល្អយាល (bisexual) ខុសគ្នាយ៉ាងណា ហើយហេតុអ្វីសំខាន់? / What's the difference between male and hermaphrodite flowers, and why does it matter?
+A (km): ផ្កាឈ្មោលមានតែសំណុំភេទឈ្មោល មិនអាចផ្តល់ផលបានទេ។ ផ្កាល្អយាល (hermaphrodite) មានទាំងសំណុំភេទ ឈ្មោលនិងស្រី អាចផ្តល់ផលបាន។ បើដើមមានផ្កាឈ្មោលច្រើនពេក ទិន្នផលអាចទាបទោះបីជាចេញផ្កាច្រើនក៏ដោយ។
+A (en): Male flowers have only male parts and cannot set fruit. Hermaphrodite flowers have both male and female parts and can set fruit. If a tree has too many male flowers, yield can stay low even with heavy flowering.
+
+#61 p.11, 13-14, 44-45
+Q: ចន្ទីអឹម២៣ ខុសពីពូជផ្សេងយ៉ាងម៉េចខ្លះ? / How is M23 different from other cashew varieties?
+A (km): អឹម២៣ ជាពូជ «ចេញផ្កាមុនផង ក្រោយផង» ចេញផ្កា ២ ទៅ ៣ ដង ពីពាក់កណ្ដាលខែ១១ ដល់ខែ២ ឬខែ៣។ ផ្កាមួយកញ្ចុំរីកបាន ១៥-២០ ថ្ងៃ ដូច្នេះបើភ្លៀងខុសរដូវ ឬត្រជាក់ វាមិនងាយខូចអស់ទេ។ គ្រាប់ធំល្មម ១១០-១៣០ គ្រាប់/គីឡូ សាច់ ២៨-៣៣% ហើយកូនផ្សាំចាប់ផ្ដើមឲ្យផលពី ១៨ ខែ។ ចំណុចខ្សោយ៖ ត្រូវថែទាំ និងបាញ់ថ្នាំយូររហូតដល់ខែ៤ ដូច្នេះចំណាយច្រើនជាងពូជដែលចេញផ្កាតែម្ដង។
+A (en): M23 is an "early-and-late" variety: it flowers 2-3 times from mid-month 11 to month 2-3. Each panicle stays in bloom 15-20 days, so off-season rain or cold rarely wipes it out. Nuts are 110-130/kg with 28-33% kernel, and grafted trees bear from 18 months. Weakness: care and spraying continue until month 4, so costs are higher than single-flowering varieties.
+
+#62 p.11
+Q: ក្រៅពីអឹម២៣ មានពូជណាផ្សេងទៀតល្អដាំនៅកម្ពុជា? / Besides M23, which other varieties are good in Cambodia?
+A (km): នៅកម្ពុជាមានពូជជ្រើសរើសល្អ ៨៖ M-1, M-7, M-10, M-23, P-2, H-09, IM-4 និង SAN-1។ កសិករដាំអឹម២៣ ជាង ៩០%។ ដោយសារអាកាសធាតុប្រែប្រួល សៀវភៅណែនាំថា ពូជចេញផ្កាមុនដូចជា M-10 អាចជាជម្រើសល្អ ហើយគួរដាំពូជចម្រុះ កុំដាំតែមួយពូជ។
+A (en): Cambodia has 8 selected varieties: M-1, M-7, M-10, M-23, P-2, H-09, IM-4 and SAN-1. Over 90% of farmers plant M23. With climate change, the book suggests an early variety like M-10 may be a good choice, and recommends planting a mix rather than a single variety.
+
+#63 p.45-46
+Q: ពូជ M-10 ល្អជាង ឬខ្សោយជាង M23? / Is M-10 better or worse than M23?
+A (km): M-10 ចេញផ្កាតែម្ដង ស្ទើរ ១០០% នៃមែក ពីដើមខែ១១ ដល់ ២០ ធ្នូ ដូច្នេះបញ្ចុះផ្កាឲ្យចេញព្រមគ្នាងាយជាង M23។ សំបកស្ដើងជាង សាច់ច្រើនជាង ត្រូវការពន្លឺ និងជីតិចជាង ហើយចេញផ្កាស្មើគ្រប់ទិស។ ចំណាយតិចជាង ព្រោះប្រមូលផលចប់មុន។ តែជាទូទៅ ផលទាបជាង M23 បន្តិច ហើយគ្រាប់ចុងរដូវតូចជាងដើមរដូវ (១១០-១៤០ គ្រាប់/គីឡូ)។
+A (en): M-10 flowers once, nearly 100% of shoots, from early month 11 to 20 December, so it is easier to induce than M23. Thinner shell and higher kernel %, needs less light and fertilizer, and flowers evenly on all sides. Lower cost because harvest ends earlier. But yield is usually a bit lower than M23, and late-season nuts are smaller (110-140/kg).
+
+#64 p.14, 46-47
+Q: ពូជ H-09 និង P-2 មានចំណុចខ្សោយអី? / What are the weaknesses of H-09 and P-2?
+A (km): ទាំងពីរចេញផ្កាតែម្ដង តែផ្កាមួយកញ្ចុំរីកលឿនពេក (H-09 ៧-១២ ថ្ងៃ, P-2 ៧-១០ ថ្ងៃ) ដូច្នេះបើភ្លៀងធំ ១-២ ដងពេលផ្ការីក អាចបាត់ផលច្រើន។ គ្រាប់តូច (H-09 ១២០-១៥០, P-2 ១២០-១៥៥ គ្រាប់/គីឡូ)។ H-09 ចេញផ្កាមិនទៀង ពេលខ្លះមុន ពេលខ្លះក្រោយ ជាពិសេសដើមក្រោម ៦-៧ ឆ្នាំ។ P-2 សំបកស្ដើងបំផុត ភាគរយសាច់ខ្ពស់បំផុតក្នុងចំណោមពូជនៅកម្ពុជា។ ជាទូទៅ ទាំងពីរផលទាបជាង M23។
+A (en): Both flower once, but each panicle blooms quickly (H-09 7-12 days, P-2 7-10 days), so 1-2 heavy rains at bloom can cost a lot of yield. Nuts are small (H-09 120-150/kg, P-2 120-155/kg). H-09 flowering timing is unstable, especially on trees under 6-7 years. P-2 has the thinnest shell and the highest kernel % of Cambodian varieties. Both usually yield less than M23.
+
+#65 p.9-10
+Q: ជ្រើសពូជចន្ទីល្អ ត្រូវមើលអីខ្លះ? / What should I look for when choosing a cashew variety?
+A (km): មើល ១០ ចំណុច៖ (១)ផលខ្ពស់ (២)សាច់លើស ២៨% (៣)គ្រាប់ធំ មិនលើស ១៤០ គ្រាប់/គីឡូ (៤)ដើមរឹងមាំ ធន់ជំងឺ (៥)ឲ្យផលរៀងរាល់ឆ្នាំ (៦)ត្រូវការជីតិច (៧)ត្រូវការពន្លឺតិច (៨)រាងដើមល្អ មិនរាយ ងាយកាត់មែក (៩)ថ្នាំងល្មម មិនញឹក មិនវែងពេក (១០)សំបកគ្រាប់ពណ៌ស ឈ្មួញឲ្យថ្លៃជាង។ ពូជល្អ មានផ្កាទ្វេភេទយ៉ាងតិច ១៥-២០%។
+A (en): 10 criteria: (1) high yield; (2) kernel over 28%; (3) big nuts, no more than 140 nuts/kg; (4) strong, disease-resistant; (5) bears every year; (6) needs little fertilizer; (7) needs less light; (8) good compact shape, easy to prune; (9) moderate internodes; (10) white nut colour, which buyers pay more for. A good variety has at least 15-20% hermaphrodite flowers.
+
+#66 p.4-5
+Q: ពីចេញផ្កា ដល់គ្រាប់ទុំ ចំណាយពេលប៉ុន្មានថ្ងៃ? / How long from flowering to ripe nuts?
+A (km): មួយកញ្ចុំ៖ ពីចេញកញ្ចុំដល់កើតក្ដិប ២៥-៣០ ថ្ងៃ ពីក្ដិបដល់ទុំ ៣៥-៤៥ ថ្ងៃ សរុប ៦០-៧៥ ថ្ងៃ (ដល់ ៨៥ ថ្ងៃ បើអាកាសធាតុអាក្រក់)។ មួយដើម ៨៥-៩០ ថ្ងៃឡើង មួយចម្ការ ១១០-១២០ ថ្ងៃ។ អឹម២៣ ចេញផ្កា ២-៣ ដង ដូច្នេះពីចេញផ្កាដល់ទុំអស់ ៤-៥ ខែ។
+A (en): Per panicle: emergence to fruit set 25-30 days, fruit set to ripe 35-45 days, so 60-75 days total (up to 85 in bad weather). Per tree 85-90+ days; per orchard 110-120 days. M23 flowers 2-3 times, so flowering-to-ripe spans 4-5 months.
+
+#67 p.4, 30
+Q: ចន្ទីត្រូវការពន្លឺថ្ងៃប៉ុន្មានម៉ោងក្នុងមួយថ្ងៃ? / How many hours of sunlight does cashew need per day?
+A (km): ត្រូវការថ្ងៃចាំងផ្ទាល់យ៉ាងតិច ៦ ម៉ោង ឬពន្លឺប្រយោល ៨ ម៉ោងក្នុងមួយថ្ងៃ ជាពិសេសដើមលើស ៦ ឆ្នាំ។ បើខ្វះពន្លឺ ចេញផ្កាតិច ហើយកើតក្ដិបមិនល្អ។ សៀវភៅនិយាយថា «ពន្លឺគ្រប់គ្រាន់ ល្អជាងជីគ្រប់គ្រាន់»។
+A (en): At least 6 hours of direct sun or 8 hours of indirect light per day, especially for trees over 6 years. Without enough light, flowering and fruit set are poor. The book says "enough sunlight is better than enough fertilizer."
+
+#68 p.4-5, 62
+Q: សីតុណ្ហភាពប៉ុន្មានល្អសម្រាប់ចន្ទីកើតក្ដិប? / What temperature is best for cashew fruit set?
+A (km): ល្អបំផុត ២២-៣៤ អង្សា។ ដើមរស់បានក្នុង ១០-៤០ អង្សា។ ថ្ងៃក្ដៅលើស ៣៥-៣៧ អង្សា ឬយប់ត្រជាក់ក្រោម ២០ អង្សា ធ្វើឲ្យផ្កា និងក្ដិបតូចៗក្រៀមស្វិត។ សំណើមខ្យល់ពេលថ្ងៃក្រោម ៤៥% ក៏កើតក្ដិបពិបាក។
+A (en): Best is 22-34°C; the tree survives 10-40°C. Days above 35-37°C or nights below 20°C make flowers and small fruit wither. Daytime humidity under 45% also makes fruit set difficult.
+
+#69 p.2 [VERIFY NUMBERS]
+Q: ដើមចន្ទីអឹម២៣ ឆ្នាំណាបានផលប៉ុន្មាន? / How much yield does grafted M23 give by age?
+A (km): គ្រាប់ស្ងួតក្នុងមួយហិកតា។ ដីប្រភេទ១ (ដីក្រហមចម្ការលើ)៖ ១៨ ខែ ២៥០-៤០០ គ.ក្រ, ឆ្នាំទី៣ ៨០០-១២០០, ឆ្នាំទី៤ ២០០០-២៥០០, ឆ្នាំទី៥ ៣០០០-៣៥០០ គ.ក្រ។ ដីខ្សាច់ល្បាយមានសំណើមរដូវប្រាំង (ប្រភេទ២) ឆ្នាំទី៥ ១៨០០-២០០០ គ.ក្រ។ ដីខ្សាច់ល្បាយគ្មានសំណើមរដូវប្រាំង (ប្រភេទ៣) ឆ្នាំទី៥ ១០០០-១៣០០ គ.ក្រ។ ផលពិតអាស្រ័យលើអាកាសធាតុ ជី និងការថែទាំ។
+A (en): Dry nuts per hectare. Soil type 1 (red upland soil): 18 months 250-400 kg, year 3 800-1,200, year 4 2,000-2,500, year 5 3,000-3,500 kg. Sandy loam that keeps dry-season moisture (type 2): year 5 1,800-2,000 kg. Sandy loam with no dry-season moisture (type 3): year 5 1,000-1,300 kg. Real yield depends on weather, fertilizer and care.
+
+#70 p.1, 5
+Q: ស្រោចទឹករដូវប្រាំង ជួយបង្កើនផលចន្ទីបានទេ? / Does dry-season irrigation increase cashew yield?
+A (km): ចន្ទីមិនចាំបាច់ស្រោចទឹកទេ តែវាត្រូវការសំណើមក្នុងដី ដើម្បីចិញ្ចឹមផ្កា និងគ្រាប់ក្នុងរដូវប្រាំង។ បើស្រោចទឹកបានក្នុងរដូវប្រាំង អាចបង្កើនផលបាន ២០-៣០%។
+A (en): Cashew does not strictly need irrigation, but it needs soil moisture to feed flowers and nuts in the dry season. Irrigating in the dry season can raise yield by 20-30%.
+
+== B. បណ្ដុះកូន និងផ្សាំ · Nursery & Grafting ==
+#11
+Q: ហេតុអ្វីត្រូវប្រើវិធីតបណត់ជើង (ចប់ត) ជាជាងដាំពីគ្រាប់ផ្ទាល់? / Why is grafting preferred over growing directly from seed?
+A (km): ដើមចន្ទីដុះពីគ្រាប់មានលក្ខណៈមិនដូចគ្នា ទិន្នផល និងគុណភាពខុសៗគ្នា ចំណែកឯដើមតបណត់ជើងរក្សាលក្ខណៈពូជពីដើមមេបានច្បាស់ជាង ចេញផ្កាលឿនជាង (១-២ឆ្នាំ ក្រោយតបណត់) ហើយប្រើគល់ជើងធន់នឹងជំងឺ។
+A (en): Seed-grown trees are genetically variable — yield and quality differ tree to tree. Grafted trees reliably preserve the mother tree's traits, flower sooner (within 1–2 years of grafting), and use disease-resistant rootstock.
+
+#14
+Q: តើវិធីតបណត់ជើងធ្វើយ៉ាងណា? / What are the steps for the wedge-graft technique?
+A (km): (១)កាត់គល់ជើងត្រង់រវាងកន្សៃស្លឹកទី១-២ រួចពុះចុះក្រោមប្រហែល១-១.៥ស.ម (២)កាត់ គ្រៀមជាទម្រង់ខ្សែឆ្នូតដូចគ្នា (៣)ដាក់គ្រៀមចូលក្នុងស្នាមពុះ រុំតឹងកុំឲ្យខ្យល់ឬទឹកចូល (៤)តបណត់ជាក្រុមៗ ១០ដើមរួចរុំ គ្រប (៥)ល្អបំផុតគួរតបណត់ពេលព្រឹក កុំឲ្យគ្រៀមស្ងួត (៦)ត្រួតពិនិត្យលទ្ធផលនៅថ្ងៃទី១០-១៥ បើគ្រៀមនៅបៃតង ស្រស់ គឺជោគជ័យ (៧)ដកគ្របចេញនៅពេលស្នាមតបណត់ភ្ជាប់គ្នាល្អហើយ។ សូមផ្ទៀងផ្ទាត់ចម្ងាយពិតប្រាកដជាមួយ អ្នកជំនាញ។
+A (en): (1) Cut the rootstock stem straight between the 1st–2nd leaf node, then split downward ~1–1.5cm; (2) cut the scion into a matching wedge shape; (3) insert the scion into the split, wrap tightly so no air/water enters; (4) work in batches of ~10, then cover; (5) best done in the morning so the scion doesn't dry out; (6) check success at day 10–15 — green/fresh scion means it took; (7) remove the wrap once the union has calloused. Verify exact measurements with an agronomist.
+
+#71 p.23
+Q: ត្រូវបណ្ដុះគ្រាប់ធ្វើជើងទម្រ នៅខែណា? / When should I sow seeds for rootstock?
+A (km): ល្អបំផុតខែ១០-១២ ព្រោះរដូវដាំគឺខែ៥-៧។ ពីបណ្ដុះគ្រាប់ដល់កូនដាំបាន ត្រូវការ ៥.៥-៦ ខែ៖ ចិញ្ចឹមជើងទម្រ ២.៥-៣ ខែ ទើបផ្សាំបាន ហើយក្រោយផ្សាំ ២.៥-៣ ខែទៀត ទើបដាំបាន។ ផ្សាំក្នុងរដូវត្រជាក់ល្អជាងរដូវភ្លៀង ឬក្ដៅ តែរកមែកផ្សាំពិបាក ព្រោះដើមកំពុងចេញផ្កា។
+A (en): Best in month 10-12, because the planting season is month 5-7. From sowing to plantable takes 5.5-6 months: 2.5-3 months to graftable rootstock, then 2.5-3 months after grafting. Grafting in the cool season works better than rainy or hot season, but scions are harder to find because trees are flowering.
+
+#72 p.23-24
+Q: គួរយកគ្រាប់ពូជអី មកធ្វើជើងទម្រ? / Which seeds should be used for rootstock?
+A (km): យកគ្រាប់ពីដើមផ្សាំដែលមានសុខភាពល្អ ផលខ្ពស់ ពូជចេញផ្កាព្រមគ្នា ហើយប្រើតែមួយពូជ កុំលាយ។ ល្អប្រើគ្រាប់ M23, M10 ឬ H09 ព្រោះផ្សាំនឹងមែក M23 បានល្អ។ គ្រាប់ M-7 ធ្វើជើងទម្រល្អជាង តែផ្សាំ M23 ពិបាក ព្រោះដើមធំ។ កុំប្រើគ្រាប់ «ដូនតា» តូចៗ ១៨០-២០០ គ្រាប់/គីឡូ ព្រោះកូនមិនស្មើ ផលទាប គ្រាប់តូច។ អ្នកលក់កូនខ្លះប្រើគ្រាប់តូចនេះ ដើម្បីបានជើងទម្រច្រើន។
+A (en): Use seed from healthy, high-yield grafted trees of a synchronous-flowering variety, one variety only. M23, M10 or H09 seed is good because it takes M23 scions well. M-7 makes better rootstock but is harder to graft with M23 because its stem is thicker. Avoid small "Dun Ta" seed (180-200 nuts/kg): seedlings vary and yield low with small nuts. Some nursery sellers use it to get more rootstock per kg.
+
+#73 p.24-25
+Q: ដីដាក់ថង់បណ្ដុះកូនចន្ទី ត្រូវលាយអីខ្លះ? / What potting mix should be used for cashew seedling bags?
+A (km): ដីល្អ៖ ដីល្បាយមានជីជាតិ (ដីក្រហម ដីល្បប់ ឬដីខ្សាច់ល្បាយបន្តិច) មិនមែនដីឥដ្ឋ ឬខ្សាច់សុទ្ធ pH ៥.៥-៦.៥។ អាចលាយអង្កាមដុត ឬផេះអង្កាម មិនលើស ១០% និង/ឬជី NPK ២០-២០-១៥ ឬ ១៥-១៥-១៥។ បើអង្កាមលើស ១០% ដីក្នុងថង់ប្រេះពេលដឹក ឬដាំ កូនងាប់។ ចាក់ដីពេញថង់ លើកគោះ ២-៣ ដង ទុកមាត់ថង់ ២-៣ ស.ម ហើយចោះរន្ធជិតបាតថង់ឲ្យទឹកស្រក។ ជួរមួយកុំដាក់លើស ៥ ថង់។
+A (en): Fertile loam (red soil, alluvial or slightly sandy loam), not clay or pure sand, pH 5.5-6.5. Can mix in burnt rice husk or husk ash up to 10%, and/or NPK 20-20-15 or 15-15-15. More than 10% husk makes the soil crack in the bag during transport or planting and seedlings die. Fill the bag, tap it 2-3 times, leave 2-3 cm at the top, and punch drainage holes near the bottom. No more than 5 bags across per row.
+
+#74 p.25-26
+Q: ត្រាំគ្រាប់ និងបណ្ដុះគ្រាប់ចន្ទីយ៉ាងម៉េច? / How do I soak and germinate cashew seeds?
+A (km): ត្រាំគ្រាប់ក្នុងទឹក ២-៣ ថ្ងៃ ប្ដូរទឹក ១-២ ដងក្នុងមួយថ្ងៃ ហើយរើសយកតែគ្រាប់លិច។ បណ្ដុះឲ្យចេញពន្លក រួចសង្កត់ក្នុងថង់ ឲ្យពន្លកបែរចុះក្រោម កប់ប្រហែល ២/៣ នៃគ្រាប់ (នៅឃើញគ្រាប់)។ គ្របស្លឹកដូង ស្រោចទឹកព្រឹកល្ងាច។
+A (en): Soak seeds 2-3 days, changing water 1-2 times a day, and keep only the seeds that sink. Germinate, then press each seed into a bag with the sprout pointing down, about 2/3 buried (seed still visible). Cover with coconut leaves and water morning and evening.
+
+#75 p.26
+Q: ជើងទម្រអាយុប៉ុន្មាន ទើបផ្សាំបាន? / How old should rootstock be before grafting?
+A (km): ជើងទម្រអាយុ ២.៥-៣ ខែ ខ្ពស់ ៥-៧ តឹក អាចផ្សាំបាន។ បើលូតយឺត អាចបាញ់ជីស្លឹក ២០-៣០ ថ្ងៃម្ដង តែកុំញឹកពេក ព្រោះលូតលឿនតែខ្សោយ។ មានសត្វល្អិត ត្រូវបាញ់ថ្នាំ។
+A (en): Rootstock is ready at 2.5-3 months and 5-7 tuek (Khmer hand-span) tall. If growth is slow, foliar-feed every 20-30 days, but not more often, or it grows fast but weak. Spray if pests appear.
+
+#76 p.26
+Q: មែកពូជសម្រាប់ផ្សាំ គួរយកពីដើមបែបណា? / Which trees should scions come from?
+A (km): យកពីដើមមេល្អ ដែលជាដើមផ្សាំជំនាន់ទី១ ឬទី២។ បើយកពីជំនាន់ទី៥-៦ ងាយប្រែពូជ ផលទាប គ្រាប់តូច។ គួរធ្វើសួនមែកពូជខ្លួនឯង (ដាំក្រាស់ ៣.៥x៣.៥ ដល់ ៤x៤ ម៉ែត្រ) កុំទិញមែកពីចម្ការមិនស្គាល់។ មែកត្រូវគ្មានជំងឺ គ្មានសត្វល្អិត ហើយមានពន្លកនៅចុង។ ពូជមែកពេញនិយម៖ M23, M-10, H-09, P-2។
+A (en): From a good mother tree that is a 1st or 2nd generation grafted tree. Scions from the 5th-6th generation are more likely to mutate, giving low yield and small nuts. Build your own scion garden (dense, 3.5x3.5 to 4x4 m) rather than buying scions from unknown farms. Scions must be pest- and disease-free with a bud at the tip. Popular scion varieties: M23, M-10, H-09, P-2.
+
+#77 p.27
+Q: កាត់មែកផ្សាំពេលណា ហើយរក្សាទុកម៉េចកុំឲ្យស្វិត? / When should scions be cut and how do I keep them fresh?
+A (km): កាត់ព្រឹកព្រលឹម ឬល្ងាចម៉ោង ៤-៥។ មែកវែង ១.២-២ តឹក ដកស្លឹកចេញ ទុកតែទងស្លឹក។ ដាក់ក្នុងថង់ ក្រាលក្រណាត់ស្អាតសើមខាងក្រោម និងគ្របខាងលើ រួចចងមាត់ថង់ ដើម្បីរក្សាសំណើម។ មុនផ្សាំ ស្រោចទឹកជើងទម្រឲ្យជោក។
+A (en): Cut early morning or at 4-5 pm. Scions 1.2-2 tuek long, leaves removed but petioles kept. Keep them in a bag with a clean damp cloth below and above, and tie the bag shut to hold moisture. Water the rootstock well before grafting.
+
+#78 p.27-28
+Q: រុំប្លាស្ទិកមុខផ្សាំម៉េច ហើយពេលណាត្រូវកាត់ចេញ? / How do I wrap the graft and when should the wrap be removed?
+A (km): រុំខ្សែប្លាស្ទិកឲ្យតឹង ពីក្រោមមុខផ្សាំឡើងដល់ចុងមែក កុំឲ្យទឹកចូល (ចូលទឹក មុខផ្សាំស្អុយ)។ ប្រើប្លាស្ទិកយឺត ដូចប្លាស្ទិករុំម្ហូប កាត់ជាបន្ទះ។ ក្រោយ ១០-១៥ ថ្ងៃ បើជាប់ ពន្លកមែកនឹងទម្លុះប្លាស្ទិកចេញឯង។ កាត់ប្លាស្ទិកត្រង់មុខផ្សាំ ក្រោយផ្សាំ ២-២.៥ ខែ កុំកាត់មុន ២ ខែ ព្រោះមុខផ្សាំមិនទាន់ជាប់រឹង។
+A (en): Wrap stretchy plastic tightly from below the graft up to the scion tip so no water gets in (water rots the union). Food-wrap film cut into strips works. After 10-15 days, if the graft has taken, the scion bud pushes through the film by itself. Cut the wrap at the union 2-2.5 months after grafting, never before 2 months, because the union has not hardened yet.
+
+#79 p.28
+Q: កូនចន្ទីផ្សាំ បែបណាទើបល្អយកទៅដាំ? / What does a good grafted seedling look like before planting?
+A (km): កូនល្អ គឺក្រោយផ្សាំ ២.៥-៣ ខែ មានត្រួយចាស់ ១-២ ថ្នាក់។ កុំដាំកូនដែលកំពុងលាស់ត្រួយខ្ចី ព្រោះលូតយឺត ឬងាប់។ ក្រោយផ្សាំ ២-២.៥ ខែ ត្រូវលើកថង់ កាត់ឫសដែលចេញក្រៅថង់។ បើដឹកទៅឆ្ងាយ កុំស្រោចទឹកមុនលើកឡានភ្លាមៗ ព្រោះដីសើមធ្វើឲ្យថង់ប្រេះ ឫសដាច់។ ទុកកូននៅចម្ការ ១ សប្ដាហ៍-១០ ថ្ងៃ មុនដាំ ស្រោចទឹកព្រឹកល្ងាច។
+A (en): 2.5-3 months after grafting, with 1-2 mature flushes. Don't plant seedlings with a young flush; they grow slowly or die. At 2-2.5 months lift the bags and cut roots growing out. For long transport, don't water right before loading: wet soil cracks the bag and breaks roots. Keep seedlings at the field 1 week to 10 days before planting, watering morning and evening.
+
+#80 p.28
+Q: ថែកូនចន្ទីក្នុងថ្នាលក្រោយផ្សាំ ត្រូវធ្វើអីខ្លះ? / How should grafted seedlings be cared for in the nursery?
+A (km): ស្រោចទឹកព្រឹកល្ងាច។ បាញ់ជីស្លឹក ២០-៣០ ថ្ងៃម្ដង កុំញឹកជាងនេះ ព្រោះកូនលូតលឿនតែខ្សោយ ដាំទៅងាប់។ អាចលាយថ្នាំពុលជាមួយជីស្លឹក ដើម្បីការពារ និងសម្លាប់ដង្កូវ។
+A (en): Water morning and evening. Foliar-feed every 20-30 days and no more often, or seedlings grow fast but weak and die after planting. Pesticide can be mixed with the foliar feed to protect against and kill caterpillars.
+
+#81 p.22
+Q: ដាំគ្រាប់ពីដើមអឹម២៣ បានដើមអឹម២៣ដែរអត់? / If I plant seed from an M23 tree, will I get M23?
+A (km): អត់ទេ។ មានការសាកល្បងដាំគ្រាប់ពីដើមផ្សាំ M23 សុទ្ធ លើដី ៤ ហិកតា (ប្រហែល ៨០០ ដើម) គ្មានដើមណាដូចដើមមេទេ ទាំងរាងដើម ពណ៌ ស្លឹក ហើយផលទាបជាងដើមមេ ៤០-៦០%។ កូនផ្សាំឲ្យផលពី ១៨ ខែ (កូនគ្រាប់ពី ៣ ឆ្នាំ) ផលខ្ពស់ជាង ៤០-៦០% ហើយដើមស្មើគ្នា។
+A (en): No. In a trial, seed from 100% grafted M23 trees was planted on 4 ha (about 800 seedlings): none matched the mother tree in shape, colour or leaves, and yield was 40-60% lower. Grafted seedlings bear from 18 months (seedlings from 3 years), yield 40-60% more and grow uniformly.
+
+== C. ដាំ និងថែកូនចន្ទី · Planting & Young Tree Care ==
+#6
+Q: តើគួរដាំចន្ទីអឹម២៣ក្នុងខែណា ហើយហេតុអ្វី? / What month should M23 cashew be planted, and why?
+A (km): គួរដាំចាប់ពីខែ៥ដល់ខែ៨ (រដូវភ្លៀង) ព្រោះត្រូវការសំណើមក្នុងដីជ្រៅ ជាង០.៥ម៉ែត្រ។ បើសំណើមមានតែក្រៅ០.២-០.៣ម៉ែត្រ កូនចន្ទីអាចងាប់ក្នុងរយៈពេល២-៣សប្តាហ៍ដំបូង។
+A (en): Plant from month 5 to month 8 (rainy season) because roots need moisture below 0.5m depth. If moisture only reaches 0.2–0.3m, the seedling can die within the first 2–3 weeks.
+
+#82 p.29
+Q: មុនដាំចន្ទី ត្រូវភ្ជួររៀបចំដីម៉េច? / How should land be prepared before planting cashew?
+A (km): ភ្ជួរ ឬជីកដីជ្រៅ ២០-៣០ ស.ម ២-៣ ដង ហាលដីឲ្យស្ងួត ដើម្បីសម្លាប់ស្មៅ និងសត្វល្អិត។ ចន្ទីដាំបានស្ទើរគ្រប់ដី លើកលែងដីលិចទឹក ទឹកដក់ និងខ្សាច់ខ្លាំង។ ដីខ្សោយ ត្រូវចាយជីច្រើនជាង ហើយផលទាបជាង។
+A (en): Plough or dig 20-30 cm deep, 2-3 times, and let the soil dry to kill weeds and pests. Cashew grows on most soils except flooded, waterlogged or very sandy land. Poor soil costs more fertilizer and yields less.
+
+#83 p.31
+Q: គួរតម្រង់ជួរដាំចន្ទីទៅទិសណា? / Which direction should planting rows face?
+A (km): តម្រង់ជួរ ឦសាន-និរតី (ឈៀងខាងជើងកើត ទៅខាងត្បូងលិច) មិនមែនកើត-លិចត្រង់ទេ។ ព្រោះចាប់ពីខែ១១ ព្រះអាទិត្យរេពីកើតទៅនិរតី ហើយផ្នែកខាងជើងនៃដើម ទទួលពន្លឺរសៀលយូរជាង ដូច្នេះខាងជើងចេញផ្កា និងកើតក្ដិបល្អជាង។
+A (en): Rows should run northeast-southwest, not straight east-west. From month 11 the sun moves from the east toward the southwest, and the north side of the tree gets more afternoon light, so it flowers and sets fruit better.
+
+#84 p.30-31 [VERIFY NUMBERS]
+Q: ដីខ្សោយ ដាំ ៨x៨ ម៉ែត្រ មានដើមកណ្ដាល បានប៉ុន្មានដើមក្នុងមួយហិកតា? / On poor soil, how many trees per hectare at 8x8 m with a centre tree?
+A (km): ដីខ្សោយ (ប្រភេទ២-៣) លូតយឺត ដាំ ៨x៨ ម៉ែត្រ ហើយដាំដើមមួយនៅកណ្ដាលការ៉េ (ដូចគ្រាប់អាប៉ោង) បាន ២៧០-២៨០ ដើម/ហិកតា។ ក្រោយកាប់ស្រឡះ ២ ដង នៅសល់ ១៦x១៦ ម៉ែត្រ មានដើមកណ្ដាល។ ដីល្អ (ប្រភេទ១) ដាំ ៧x៧ ម៉ែត្រ បាន ១៨០-១៩០ ដើម/ហិកតា ក្រោយកាប់ ២ ដង នៅសល់ ១៤x១៤ ម៉ែត្រ។ សៀវភៅថា មានតែ ២ ប្រព័ន្ធនេះទេដែលសមស្រប។
+A (en): Poor soil (types 2-3) grows slowly, so plant 8x8 m plus one tree in the centre of each square (quincunx), giving 270-280 trees/ha. After 2 thinnings the final layout is 16x16 m plus centre trees. Good soil (type 1): 7x7 m, 180-190 trees/ha, thinned twice to 14x14 m. The book says only these two systems are suitable.
+
+#85 p.31-32 [VERIFY NUMBERS]
+Q: ជីករណ្ដៅហើយដាំភ្លាម អត់ដាក់ជីទ្រាប់បាតបានអត់? / Can I dig and plant right away without base fertilizer in the hole?
+A (km): បាន។ ជាក់ស្ដែង ការជីកហើយដាំភ្លាមដោយមិនដាក់ជីទ្រាប់បាត កាត់បន្ថយកូនងាប់ ព្រោះកម្មករច្រើនលាយជីមិនសព្វ ហើយជីលាយមិនសព្វសម្លាប់កូន។ ក្នុងករណីនេះ ១៥ ថ្ងៃក្រោយដាំ ទើបរោយជី NPK ១៥-១៥-១៥ ឬ ២០-២០-១៥ ឬអ៊ុយរ៉េ ឆ្ងាយពីគល់ប្រហែល ២ តឹក ហើយលុបដី។ បើចង់ដាក់ជីទ្រាប់បាត៖ ប្រហែល ១ ស្លាបព្រាបាយក្នុងមួយរណ្ដៅ លាយឲ្យសព្វ ចាំភ្លៀងធំ ១-២ ដង ទើបដាំ។
+A (en): Yes. In practice, digging and planting immediately without base fertilizer reduces seedling deaths, because workers often mix fertilizer poorly and unmixed fertilizer kills seedlings. In that case, 15 days after planting scatter NPK 15-15-15, 20-20-15 or urea about 2 tuek from the stem and cover with soil. If you do use base fertilizer: about 1 rice spoon per hole, mixed well, then wait for 1-2 heavy rains before planting.
+
+#86 p.31-32
+Q: ដាំកូនចន្ទីចុះ ធ្វើម៉េចកុំឲ្យបែកដីក្នុងថង់? / How do I plant without breaking the root ball?
+A (km): កាត់បាតថង់ ហើយឆូតចំហៀងថង់ដោយកាំបិត ឬឡាម កាត់ឫសដែលរុំចេញមុនដាំ។ ដាក់ឲ្យមុខដីក្នុងថង់ស្មើនឹងដីជុំវិញ លុបដី សង្កត់ឲ្យណែន តែកុំជាន់លើដីក្នុងថង់ ព្រោះបែកដុំដី។ ក្រោយភ្លៀងធំ ១-២ ដង ដីស្រុតចុះ ០.៥-១ តឹក ល្អសម្រាប់គល់។ គ្របគល់ដោយចំបើង ឬស្លឹកឈើស្ងួត។
+A (en): Cut off the bag bottom and slit the side with a knife or razor; trim coiled roots before planting. Set the bag soil level with the ground, backfill and firm, but don't step on the root ball or it breaks. After 1-2 heavy rains the soil settles 0.5-1 tuek, which is fine. Mulch with straw or dry leaves.
+
+#87 p.32-33 [VERIFY NUMBERS]
+Q: ឆ្នាំដំបូង ដាក់ជីកូនចន្ទីប៉ុន្មានដង ហើយដាក់ពេលណា? / How many times and when should young trees be fertilized in year 1?
+A (km): ដាក់ជីដីយ៉ាងតិច ៣ ដង ហើយដងចុងក្រោយកុំឲ្យហួសចុងខែ៩។ ដង១៖ ១៥-២០ ថ្ងៃក្រោយដាំ ដកស្មៅ កាត់ប្លាស្ទិកមុខផ្សាំ រោយអ៊ុយរ៉េប្រហែលកន្លះស្លាបព្រាបាយ ជុំវិញគល់ ឆ្ងាយ ០.២៥-០.៣ ម៉ែត្រ ហើយលុបដី។ ដង២៖ ១-១.៥ ខែក្រោយ ដាក់អ៊ុយរ៉េ ឬ NPK ១៥-១៥-១៥/២០-២០-១៥ ប្រហែល ១ ស្លាបព្រាបាយ ជារង្វង់ឆ្ងាយជាងមុន។ ដង៣៖ ដូចដង២ តែប្រើតែ NPK កុំប្រើអ៊ុយរ៉េ (អ៊ុយរ៉េធ្វើឲ្យកូនខ្សោយ)។ ដាក់ម្ដងៗ ពង្រីករង្វង់ចេញក្រៅ កុំឲ្យប៉ះឫសផ្ទាល់ ហើយកុំជីកជ្រៅជិតគល់។ ចន្លោះដង អាចបាញ់ជីស្លឹក។
+A (en): At least 3 soil applications, the last no later than end of month 9. App 1: 15-20 days after planting: weed, cut the graft wrap, scatter about half a rice spoon of urea 0.25-0.3 m from the stem and cover. App 2: 1-1.5 months later, urea or NPK 15-15-15/20-20-15, about 1 rice spoon, in a wider ring. App 3: same as App 2 but NPK only, no urea (urea makes seedlings weak). Move the ring outward each time, never touch roots directly, and don't dig deep near the stem. Foliar feed between applications.
+
+#88 p.33
+Q: ដាំដំណាំអីខ្លះ ចន្លោះជួរចន្ទីក្មេងបាន? / What can be intercropped between young cashew rows?
+A (km): ដាំដំណាំទាបៗបាន ដូចជាសណ្ដែក សណ្ដែកដី ល្ពៅ ឃ្លោក ត្រសក់។ កុំដាំដំឡូងមី ពោត ឬដំណាំខ្ពស់ ព្រោះបាំងពន្លឺ ពិបាកដាក់ជី និងថែទាំ ហើយកូនចន្ទីក្រិន។
+A (en): Low crops are fine: beans, peanuts, pumpkin, gourd, cucumber. Don't plant cassava, corn or other tall crops: they shade the seedlings, make fertilizing and care harder, and stunt the cashew.
+
+#89 p.34
+Q: កូនចន្ទីដាំបានប៉ុន្មានខែ ទើបកាត់ចុងឲ្យបែកមែក? / When should young trees be topped to form branches?
+A (km): ១-២ ខែក្រោយដាំ កាត់មែកដុះពីជើងទម្រ (ក្រោមមុខផ្សាំ) ចោល។ ៤-៥ ខែក្រោយដាំ (ប្រហែលខែ១០-១១) ពេលកូនខ្ពស់ ៨-៩ តឹក កាត់ចុង ឲ្យចេញមែក ២-៤។ ពេលមែកថ្មីវែង ២-៤ តឹក កាត់មែកខាងក្រោមចោល ទុក ២-៣ មែក (ដល់ ៤ បើចាំបាច់) ទំហំស្មើគ្នា បែរទៅទិសផ្សេងៗគ្នា ដើម្បីបានរាងដើមល្អ ខ្យល់ចេញចូល ពន្លឺគ្រប់ និងធន់ខ្យល់។
+A (en): 1-2 months after planting, remove shoots from the rootstock below the graft. At 4-5 months (around month 10-11), when the plant is 8-9 tuek tall, top it to get 2-4 branches. When new branches are 2-4 tuek long, remove the lower ones and keep 2-3 (up to 4) evenly sized branches facing different directions, for good shape, airflow, light and wind balance.
+
+#90 p.34
+Q: ក្រោយខែ១២ ឆ្នាំដំបូង នៅដកស្មៅ ដាក់ជី ឬកប់គល់កូនចន្ទីបានអត់? / After month 12 of the first year, can I still weed, fertilize or hill up young trees?
+A (km): កុំ។ ក្រោយខែ១២ នៃឆ្នាំដំបូង កុំដកស្មៅ កុំដាក់ជី និងកុំកាប់ដីកប់គល់ ព្រោះគ្មានភ្លៀង កូនអាចងាប់។
+A (en): No. After month 12 of the first year, don't weed, fertilize or hill up: there is no rain and the seedlings can die.
+
+#91 p.33 [VERIFY NUMBERS]
+Q: កូនចន្ទីក្មេង បាញ់ថ្នាំសត្វល្អិតពេលណា ទើបសន្សំលុយ? / When should young trees be sprayed for pests to save money?
+A (km): បាញ់តែពេលត្រួយខ្ចីកំពុងលាស់ ព្រោះសត្វល្អិតមិនស៊ីស្លឹកចាស់ទេ។ ប្រើថ្នាំសម្លាប់ដង្កូវ និងសត្វស្លាបរឹង តាមស្លាក។ អាចលាយជាមួយជីស្លឹក NPK ៣០-១០-១០ ឬ ២១-២១-២១ ឬជីដែលមាន N ស្មើ ឬច្រើនជាង P និង K។
+A (en): Spray only when a young flush is emerging, because pests don't eat old leaves. Use products for caterpillars and hard-shelled beetles at label dose. Can be mixed with foliar NPK 30-10-10 or 21-21-21, or any formula with N equal to or higher than P and K.
+
+== D. ជី · Fertilizer ==
+#17
+Q: តើដើមចន្ទីអឹម២៣អាយុ១-៤ឆ្នាំត្រូវការជីអត្រាណា? / What NPK ratio does an M23 tree age 1–4 years need?
+A (km): ដើមក្មេង (១-៤ឆ្នាំ) ត្រូវការជីអត្រា N=៣:P=១:K=១ ជាចម្បង (ជួយលូតលាស់ ស្លឹកនិងសាខា) ជាមួយការដាក់បន្ថែម N=១:P=១:K=១ ។
+A (en): Young trees (age 1–4) mainly need NPK ratio N=3:P=1:K=1 (supports leaf/branch growth), with a secondary application of N=1:P=1:K=1.
+
+#18
+Q: តើដើមចន្ទីអឹម២៣ដែលឲ្យផលរួច (អាយុ៥ឆ្នាំឡើង) ត្រូវការជីអត្រាណា? / What NPK ratio does a mature, fruit-bearing M23 tree (age 5+) need?
+A (km): ដើមចាស់ (៥ឆ្នាំឡើងទៅ) ត្រូវការជី អត្រា N=១:P=៣:K=៣ (ឬ N=១:P=៣:K=២) ជាចម្បង ព្រោះមានផ្កាផ្លែច្រើនជាងស្លឹក ត្រូវការផូស្វ័រនិងប៉ូតាស្យូម ច្រើនជាង។ ជួនកាលនៅត្រូវការការដាក់បន្ថែម N=៣:P=១:K=១ មុនចេញផ្កា។
+A (en): Mature trees (age 5+) mainly need NPK ratio N=1:P=3:K=3 (or N=1:P=3:K=2) — since they're supporting flowers/fruit more than leaves, they need more phosphorus and potassium. A secondary N=3:P=1:K=1 application is sometimes still used just before flowering.
+
+#20
+Q: តើគួរដាក់ជីនៅត្រង់ណារបស់ដើមចន្ទី? / Where around the tree should fertilizer be placed?
+A (km): ដាក់ជីជុំវិញព័ទ្ធសំបកឫស (ក្រោមចុងម្លប់) កុំដាក់ជិតគល់ដើមពេក ព្រោះអាចដុតឫសនិង សំបកឈើ។ អាចជីករណ្តៅរង្វង់ក្រោមម្លប់ ជ្រៅប្រហែល១៥ស.ម ដាក់ជីរួចគ្របដីវិញ ហើយស្រោចទឹកក្នុងរយៈ ពេល២-៣ម៉ោងឲ្យជីរលាយ។
+A (en): Apply fertilizer around the drip-line (canopy edge), not close to the trunk — close application can burn roots and bark. A shallow trench (~15cm deep) around the drip line, filled after applying fertilizer and watered within 2–3 hours, works well.
+
+#92 p.34 [VERIFY NUMBERS]
+Q: ដើមចន្ទីអាយុលើស ១០ ខែ ដាក់ជីដីប៉ុន្មានដងក្នុងមួយឆ្នាំ? / How many soil fertilizer applications per year for trees over 10 months old?
+A (km): អាយុ ៣ ឆ្នាំចុះ ដាក់ ៣ ដង៖ ដើមរដូវភ្លៀង (ខែ៥-៦) កណ្ដាលរដូវ (ខែ៧-៨) និងលើកទី៣ ខែ៨-៩។ អាយុ ៤ ឆ្នាំឡើង យ៉ាងតិច ២ ដង៖ ខែ៥-៦ និងខែ៧-៨ ឬយឺតបំផុតដើមខែ៩។ កុំដាក់ជីដីក្រោយខែ៩ ព្រោះដីគ្មានសំណើមរំលាយជី។ កែតាមភ្លៀងនៅតំបន់អ្នក។
+A (en): Up to age 3: 3 times — early rains (month 5-6), mid-season (month 7-8), and a 3rd in month 8-9. Age 4+: at least 2 times — month 5-6 and month 7-8, or at the latest early month 9. Don't apply soil fertilizer after month 9: there is no moisture to dissolve it. Adjust to local rainfall.
+
+#93 p.34-35 [VERIFY NUMBERS]
+Q: ចន្ទីមួយដើម ដាក់ជីដីប៉ុន្មានគីឡូ? / How many kg of fertilizer per tree, and where?
+A (km): មួយឆ្នាំ ២ គីឡូ សម្រាប់មែកវែង ១ ម៉ែត្រ (វាស់ពីគល់ចេញទៅ)។ ឧទាហរណ៍ មែកវែង ២ ម៉ែត្រ ដាក់ ៤ គីឡូ/ឆ្នាំ។ បើដាក់ ២ ដង ចែកពាក់កណ្ដាល។ កែតាមដីល្អ ឬខ្សោយ។ ដាក់ក្រោមចុងគុម្ព ឆ្ងាយពីគល់ ២ តឹក ដល់ ១ ម៉ែត្រ តាមអាយុ (កុំជិតគល់ពេក អាចងាប់)។ កប់ជីជ្រៅ ០.៧-១ តឹក ហើយលុបដី កុំរោយលើដី ព្រោះថ្ងៃ និងភ្លៀងធ្វើឲ្យបាត់ជី។
+A (en): 2 kg per year for every 1 m of branch length (measured from the trunk). Example: 2 m branches = 4 kg/year; split in half if applying twice. Adjust for soil quality. Place it under the canopy edge, 2 tuek to 1 m from the trunk depending on age (too close can kill the tree). Bury 0.7-1 tuek deep and cover; don't leave it on the surface where sun and rain waste it.
+
+#94 p.16
+Q: ហេតុអីមិនគួរដាក់ជីដីដែលមាន P និង K ក្រោយខែ៩? / Why not apply soil fertilizer containing P and K after month 9?
+A (km): ទោះមានសំណើម ផូស្វ័រ (P) និងប៉ូតាស្យូម (K) ត្រូវការ ១៥-២០ ថ្ងៃ ទើបរលាយ ហើយឫសស្រូបបាន ចំណែកអាសូត (N) តែ ១-២ ថ្ងៃ។ ដីខ្សាច់គ្មានសំណើមចុងរដូវភ្លៀង ស្ងួតពីចុងខែ១១ ដូច្នេះជីដីមាន P និង K ដាក់ក្រោយខែ៩ ដើមស្រូបមិនបាន ខាតលុយ។
+A (en): Even with moisture, phosphorus and potassium need 15-20 days to dissolve before roots can take them up; nitrogen needs only 1-2 days. On sandy soil the ground dries out from end of month 11, so P and K applied after month 9 can't be absorbed and the money is wasted.
+
+#95 p.15, 49
+Q: បាញ់តែជីស្លឹក មិនដាក់ជីដីបានអត់? / Can I use only foliar fertilizer and skip soil fertilizer?
+A (km): មិនគួរ។ ជីស្លឹកប្រើពេលដីស្ងួត ឫសស្រូបជីពីដីមិនបាន។ វាស្រូបលឿន តែថ្លៃ ហើយមានឥទ្ធិពលខ្លី ដូចចាក់សេរ៉ូម។ ពឹងតែជីស្លឹក ជាពិសេសលើដីខ្សោយ ត្រួយ និងផ្កាខ្សោយ កើតក្ដិបតិច ហើយចំណាយច្រើន។ ត្រូវដាក់ជីដីឲ្យគ្រប់ជាមុនសិន។
+A (en): No. Foliar feed is for when soil is dry and roots can't absorb nutrients. It works fast but is expensive and short-lived, like an IV drip. Relying on it alone, especially on poor soil, gives weak flushes and flowers, poor fruit set and high cost. Apply enough soil fertilizer first.
+
+#96 p.16-17
+Q: ជី N P K នីមួយៗ ជួយចន្ទីអីខ្លះ? / What do N, P and K each do for cashew?
+A (km): N (អាសូត)៖ ជួយលូតត្រួយ ស្លឹក មែក ឫស ស្លឹកខៀវ។ P (ផូស្វ័រ)៖ ជួយចេញកញ្ចុំផ្កាលឿន ឫសថ្មី លំអងច្រើន កើតក្ដិប និងទិន្នផល។ K (ប៉ូតាស្យូម)៖ ឲ្យគ្រាប់ធំ ពេញ ស្រូប និងរក្សាទឹក ដើមរឹងមាំ ធន់អាកាសធាតុអាក្រក់ ជំងឺ និងសត្វល្អិត។ K មានក្នុងលាមកសត្វ ផេះចំបើង និងផេះ។
+A (en): N: growth of shoots, leaves, branches, roots; green leaves. P: fast panicle and flower formation, new roots, more pollen, fruit set and yield. K: bigger, fuller nuts; water uptake and retention; stronger trees that resist bad weather, disease and pests. K is found in manure, rice straw ash and wood ash.
+
+#97 p.17
+Q: បូរ៉ុង និងកាល់ស្យូម ជួយចន្ទីអី? / What do boron and calcium do for cashew?
+A (km): បូរ៉ុង ជួយឲ្យចេញផ្កាល្អ ផ្កាច្រើន លំអងរស់ល្អ ជួយកើតក្ដិប ទប់ការជ្រុះផ្លែ និងឲ្យគ្រាប់ពេញ។ ប្រើពីមុនចេញផ្កា ដល់ក្ដិបនៅតូច។ កាល់ស្យូម ជួយឲ្យផ្កា ដើម ផ្លែ គ្រាប់ និងសំបករឹង ធន់ជំងឺ ជាពិសេសមុន និងពេលចេញផ្កា កើតក្ដិប។
+A (en): Boron: better and more flowers, viable pollen, helps fruit set, reduces fruit drop and fills nuts; used from pre-flowering to small-fruit stage. Calcium: firms flowers, stems, fruit, nuts and bark and improves disease resistance, especially before and during flowering and fruit set.
+
+#98 p.35, 49, 53 [VERIFY NUMBERS]
+Q: ដាក់ជីអាសូតច្រើនចុងរដូវ ធ្វើឲ្យចន្ទីចេញផ្កាយឺតមែនទេ? / Does heavy nitrogen late in the season delay flowering?
+A (km): មែន។ ការស្រាវជ្រាវជាង ១០ ឆ្នាំ បង្ហាញថា ជី N ខ្ពស់ចុងរដូវ បូកដីសើមខ្លាំង ធ្វើឲ្យចេញផ្កាយឺតជាងមួយខែ។ ជី P ខ្ពស់ K ស្មើ ឬទាបជាង និង N ទាប នៅចុងរដូវ ធ្វើឲ្យចេញផ្កាមុន និងព្រមគ្នា។ ដូច្នេះដើមអាយុ ៥ ឆ្នាំឡើង ជីដីលើកទី១ ប្រើ N3:P1:K1 ហើយលើកចុងក្រោយ (ខែ៧-៨ យឺតបំផុតដើមខែ៩) ប្រើ N1:P3:K3 ឬ N1:P3:K2 កុំប្រើ N ខ្ពស់។
+A (en): Yes. Over 10 years of research showed high-N fertilizer late in the season plus wet soil delays flowering by a month or more. High P, equal or lower K and low N late in the season gives earlier, more synchronous flowering. So for trees age 5+, the first application is N3:P1:K1 and the last (month 7-8, at the latest early month 9) is N1:P3:K3 or N1:P3:K2, never high N.
+
+== E. បញ្ចុះផ្កាអឹម២៣ · Flower Induction for M23 ==
+#22
+Q: តើអាចប្រើប៉ូតាស្យូមណៃត្រាត (KNO3) ជួយអ្វីខ្លះ? / What is Potassium Nitrate (KNO3) used for?
+A (km): KNO3 ១៣-០-៤៦ ជួយពង្រឹងស្លឹកនិងជំរុញការចេញផ្កាឲ្យស្មើគ្នា ជាធម្មតាលាយ ជាមួយថៃអុរ្យា។ កំហាប់តាមស្លាកផលិតផល។
+A (en): KNO3 13-0-46 helps strengthen leaves and promotes more uniform flowering timing, usually mixed with Thiourea. Follow the product label for exact dosage.
+
+#24
+Q: តើហេតុអ្វីថ្នាំបាញ់ជួយចេញផ្កាមិនដំណើរការ? / Why might a flowering-support spray not work as expected?
+A (km): ៤មូលហេតុ៖ (១)បាញ់មិនគ្រប់តំបន់ (២)ចាប់ផ្តើមបាញ់យឺតពេក (៣)ថ្នាំថៃអុរ្យាគុណភាពមិនល្អ (៤)មានភ្លៀងក្នុងឬក្រោយពេលបាញ់ភ្លាមៗ។
+A (en): 4 possible reasons: (1) incomplete spray coverage; (2) started spraying too late; (3) the Thiourea product quality is poor; (4) rain occurred during or right after application.
+
+#99 p.43-44
+Q: ហេតុអីគេណែនាំឲ្យចន្ទីចេញផ្កាពីដើមខែ១១ ដល់ ២០ ធ្នូ? / Why is early November to 20 December the target flowering window?
+A (km): ព្រោះ (១)ចុងរដូវភ្លៀង ដើមរដូវត្រជាក់ ដីនៅសើម (២)សីតុណ្ហភាព ២២-៣៤ អង្សា ល្អកើតក្ដិប (៣)គេចសន្សើមប្រៃ ដែលច្រើនមកពីខែ១ (៤)គេចមូសតែ និងទ្រីប ដែលច្រើនរដូវក្ដៅ ខែ២-៤ (៥)ចំណាយថែទាំតិច (៦)លក់គ្រាប់មុនខែ៤ ថ្លៃល្អ។ ចេញផ្កាពីខែ១ ត្រូវ ២៥-៣០ ថ្ងៃ ទើបកើតក្ដិប ងាយខូចដោយសន្សើមប្រៃ កម្ដៅ ដីស្ងួត និងសត្វល្អិត។ ចេញផ្កាមុនខែ១១ ក៏ត្រូវភ្លៀងខូច គុណភាពគ្រាប់ទាប។
+A (en): Because (1) it's the end of rains/start of the cool season and soil is still moist; (2) 22-34°C suits fruit set; (3) it avoids acid dew, which mostly comes from month 1; (4) it avoids tea mosquito bug and thrips, common in hot months 2-4; (5) care costs are lower; (6) nuts sell before month 4 at better prices. Flowers from month 1 need 25-30 days to set and are easily lost to acid dew, heat, dry soil and pests. Flowers before month 11 get hit by rain and nut quality drops.
+
+#100 p.36, 48
+Q: ចន្ទីអាយុប៉ុន្មានឆ្នាំ ទើបគួរបាញ់បញ្ចុះផ្កាឲ្យចេញព្រមគ្នា? / At what age should flower induction start?
+A (km): កុំបញ្ចុះផ្កាដើមក្រោម ៥ ឆ្នាំ ព្រោះគុម្ព និងឫសនៅតូច ចិញ្ចឹមផ្កា និងគ្រាប់មិនបាន ឫសស្រូបទឹករដូវប្រាំងមិនបាន ផលទាប ហើយដើមលូតយឺត។ ដើមក្មេង បាញ់ទៅក៏នៅតែមិនព្រមគ្នា គ្រាន់តែចេញវគ្គទី១ ច្រើនបន្តិច។ សម្រេចតាមទំហំគុម្ពដើម ច្រើនជាងតាមអាយុ។
+A (en): Don't induce trees under 5 years: canopy and roots are too small to feed flowers and nuts or draw water in the dry season, so yield is low and growth slows. On young trees induction still isn't synchronous; it only adds a bit to flush 1. Decide by canopy size more than age.
+
+#101 p.47-50
+Q: មុនបញ្ចុះផ្កា ត្រូវដឹងគោលការណ៍សំខាន់អីខ្លះ? / What are the key principles before inducing flowering?
+A (km): ៧ គោលការណ៍៖ (១)កុំធ្វើលើដើមក្រោម ៥ ឆ្នាំ (២)ដាក់ជីដីឲ្យគ្រប់ កុំពឹងតែជីស្លឹក (៣)ជីចុងរដូវ P និង K ខ្ពស់ជាង N ហើយពន្លឺគ្រប់ (កាត់មែកត្រឹមត្រូវ) (៤)ត្រួយ និងស្លឹកអាយុស្មើគ្នា ទើបចេញផ្កាព្រមគ្នា (៥)កែកម្រិតថ្នាំតាមស្ថានភាពស្លឹក និងអាកាសធាតុ (៦)បាញ់ឲ្យសព្វ (៧)ចាប់ផ្ដើមឲ្យទាន់ពេល។ ធ្វើត្រូវ ផលខ្ពស់ជាងធម្មតា ធ្វើខុស ចំណាយច្រើន ផលដដែល ឬទាបជាង។ គួរសាកលើដីតូចមុន ទើបពង្រីក។
+A (en): 7 principles: (1) not on trees under 5 years; (2) enough soil fertilizer, not foliar alone; (3) late-season fertilizer with P and K higher than N, plus enough light through correct pruning; (4) flushes and leaves of the same age so flowering is synchronous; (5) adjust doses to leaf condition and weather; (6) spray thoroughly; (7) start on time. Done right, yield beats normal; done wrong, costs rise and yield stays the same or drops. Test on a small area first.
+
+#102 p.50-51 [VERIFY NUMBERS]
+Q: ត្រូវចាប់ផ្ដើមបាញ់បញ្ចុះត្រួយ ពីខែណា? / When should spraying for flower induction start?
+A (km): ពីចាប់ផ្ដើមបាញ់ ដល់ត្រួយទី២ (ត្រួយផ្កា) ជិតរីក ត្រូវការ ៩៨-១៣៤ ថ្ងៃ (គិតសម្រាប់ចម្ការប្រហែល ៣០ ហិកតា)។ ដូច្នេះចម្ការធំជាង ៣០ ហិកតា ចាប់ផ្ដើមដើមខែ៨ (សីហា) ចម្ការតូចជាង ៣០ ហិកតា ចាប់ផ្ដើមពាក់កណ្ដាលខែ៨។ អាស្រ័យលើចំនួនម៉ាស៊ីនបាញ់ កម្មករ និងអាកាសធាតុ។ ចាប់ផ្ដើមខុសពេល ផ្កាចេញមុន ឬយឺតពេក ត្រូវភ្លៀង ឬកម្ដៅ។
+A (en): From the first spray to flush 2 (the flower flush) about to bloom takes 98-134 days (based on a ~30 ha farm). So farms over 30 ha start early August (month 8), under 30 ha mid-August. It depends on sprayers, labour and weather. Starting at the wrong time makes flowering too early or too late, into rain or heat.
+
+#103 p.54-55 [VERIFY NUMBERS]
+Q: ចន្ទីមានស្លឹកចាស់ ស្លឹកខ្ចី លាយគ្នា ត្រូវបាញ់ថ្នាំម៉េច? / Trees have a mix of old and young leaves — how should they be sprayed?
+A (km): (វិធីទី១) ដើមខែ៨ លាយ Thiourea ១-១.៥ គីឡូ + ថ្នាំជ្រាប/ស្អិត ១ លីត្រ ក្នុងទឹក ១០០០ លីត្រ បាញ់ស្លឹកឲ្យសព្វ ដើម្បីឲ្យស្លឹកចាស់ព្រមគ្នា។ ៧-១០ ថ្ងៃក្រោយ ពេលស្លឹកចាស់ហើយ លាយ Thiourea ០.៥ គីឡូ + KNO3 (១៣-០-៤៦) ៤-៥ គីឡូ + ថ្នាំជ្រាប ១ លីត្រ ក្នុងទឹក ១០០០ លីត្រ បាញ់លើស្លឹកចាស់ឲ្យសព្វ ដើម្បីជំរុញត្រួយទី១ ឲ្យចេញព្រមគ្នា។ បាញ់រូបមន្តនេះម្ដងទៀត ត្រួយនឹងចេញក្នុង ៧-១០ ថ្ងៃ។
+A (en): (Method 1) Early month 8: Thiourea 1-1.5 kg + spreader/sticker 1 L per 1,000 L water, spray all leaves thoroughly so they mature together. 7-10 days later, once leaves have aged: Thiourea 0.5 kg + KNO3 (13-0-46) 4-5 kg + spreader 1 L per 1,000 L, spray old leaves thoroughly to push flush 1 out together. Repeat once more; flush 1 appears within 7-10 days.
+
+#104 p.55-56 [VERIFY NUMBERS]
+Q: ចន្ទីមានសុទ្ធតែស្លឹកចាស់ល្អ បាញ់ឲ្យចេញត្រួយទី១ ម៉េច? / Trees have all useful old leaves — how do I push flush 1?
+A (km): (វិធីទី២) ដើមខែ៨ ឬយឺតបំផុតពាក់កណ្ដាលខែ៨ លាយ Thiourea ០.៥ គីឡូ + KNO3 ១៣-០-៤៦ ៤-៥ គីឡូ + ថ្នាំជ្រាប ១ លីត្រ ក្នុងទឹក ១០០០ លីត្រ បាញ់លើស្លឹកចាស់ឲ្យសព្វ។ ៥-៧ ថ្ងៃក្រោយ បាញ់លើកទី២ ដូចគ្នា។ បើទុកចោល ត្រួយទី១ ចេញរាយៗជាង ២ ខែ ធ្វើឲ្យត្រួយទី២ មិនព្រមគ្នា ហើយចេញផ្កាយឺត។
+A (en): (Method 2) Early month 8, or mid-month 8 at the latest: Thiourea 0.5 kg + KNO3 13-0-46 4-5 kg + spreader 1 L per 1,000 L, spray old leaves thoroughly; repeat the same spray 5-7 days later. Left alone, flush 1 trickles out over 2+ months, so flush 2 is uneven and flowering is late.
+
+#105 p.56-57 [VERIFY NUMBERS]
+Q: ចន្ទីចាស់ ស្លឹកចាស់គ្មានប្រយោជន៍ពេញដើម ត្រូវធ្វើម៉េច? / Old trees full of useless old leaves — what should I do?
+A (km): (វិធីទី៣) ដើមបែបនេះ ស្លឹកជ្រុះឯងខែ១២-១ ហើយចេញត្រួយតែម្ដង ជាត្រួយផ្កា ខ្វះកម្លាំង ហើយត្រូវរដូវក្ដៅ។ ដើមខែ៨ ឬយឺតបំផុតពាក់កណ្ដាលខែ៨ លាយ Thiourea ៤-៥ គីឡូ + ថ្នាំជ្រាប ១ លីត្រ ក្នុងទឹក ១០០០ លីត្រ បាញ់លើស្លឹកចាស់ ស្លឹកនឹងជ្រុះអស់ ហើយត្រួយទី១ ចេញក្នុង ៧-១០ ថ្ងៃ។ បន្ទាប់មកថែត្រួយទី១ ដូចវិធីទី១។
+A (en): (Method 3) These trees drop leaves on their own in month 12-1 and flush only once, as the flower flush, which lacks energy and meets the hot season. Early month 8, or mid-month 8 at the latest: Thiourea 4-5 kg + spreader 1 L per 1,000 L on the old leaves; they all drop and flush 1 comes out within 7-10 days. Then care for flush 1 as in Method 1.
+
+#106 p.20 [VERIFY NUMBERS]
+Q: Thiourea កម្រិតខុសគ្នា ធ្វើអ្វីខុសគ្នាលើដើមចន្ទី? / What do different Thiourea doses do to cashew trees?
+A (km): គិតក្នុងទឹក ១០០០ លីត្រ៖ ០.៥-០.៧ គីឡូ ធ្វើឲ្យស្លឹកខ្ចីចាស់ ស្លឹកចាស់គ្មានប្រយោជន៍លឿងជ្រុះបន្តិចម្ដងៗ ហើយជំរុញពន្លកត្រួយថ្មី។ ១.៥-២ គីឡូ ធ្វើឲ្យត្រួយខ្ចីរលាកឈប់លូត ស្លឹកមិនទាន់ចាស់ក៏ឈប់លូតហើយចាស់ ស្លឹកចាស់លឿងជ្រុះ។ ៥-៧ គីឡូ ធ្វើឲ្យត្រួយខ្ចីខូច ហើយស្លឹកទាំងចាស់ទាំងខ្ចីរលាកជ្រុះ ដើម្បីឲ្យដើមចេញត្រួយថ្មីព្រមគ្នា។
+A (en): Per 1,000 L of water: 0.5-0.7 kg matures young leaves, makes useless old leaves yellow and drop gradually, and stimulates new flush buds. 1.5-2 kg burns young shoots so they stop growing, makes immature leaves stop and mature, and old leaves drop. 5-7 kg damages young shoots and burns off old and young leaves so the whole tree reflushes together.
+
+#107 p.55 [VERIFY NUMBERS]
+Q: ត្រួយទី១ ចេញហើយ ត្រូវថែម៉េច? / Flush 1 has come out — how should I care for it?
+A (km): ការពារសត្វល្អិត និងចិញ្ចឹមត្រួយ៖ លាយ Cypermethrin និង/ឬ Chlorpyrifos ១ លីត្រ + ជីស្លឹក N ខ្ពស់ ឬ NPK ស្មើគ្នា (ដូចជា ៣០-១០-១០ ឬ ២៦-២៦-២៦) ២-៣ គីឡូ + ថ្នាំជ្រាប ១ លីត្រ ក្នុងទឹក ១០០០ លីត្រ ការពារមូសតែ ដង្កូវ សត្វស្លាបរឹង និងខ្ទុង។ បាញ់ ១-២ ដងទៀត រហូតត្រួយទី១ ចាស់ ព្រោះត្រួយទី១ ត្រូវសន្សំកម្លាំងសម្រាប់ត្រួយទី២ ផ្កា និងក្ដិប។
+A (en): Protect and feed it: Cypermethrin and/or Chlorpyrifos 1 L + high-N or balanced foliar NPK (e.g. 30-10-10 or 26-26-26) 2-3 kg + spreader 1 L per 1,000 L, against tea mosquito bug, caterpillars, beetles and weevils. Spray 1-2 more times until flush 1 matures, because flush 1 stores the energy for flush 2, flowers and fruit set.
+
+#108 p.58
+Q: ពេលណាត្រូវភ្ជួរដី ឬកាត់ស្មៅ ដើម្បីជួយឲ្យចន្ទីចេញផ្កា? / When should I plough or cut weeds to help flowering?
+A (km): មុន ឬក្រោយបុណ្យភ្ជុំបិណ្ឌ ភ្ជួរដី និង/ឬកាត់ស្មៅ ដើម្បីឲ្យដីខាងលើស្ងួត កាត់បន្ថយការស្រូបទឹក ហើយរក្សាសំណើមដីខាងក្រោមបានយូរ ជួយឲ្យចេញត្រួយ ចេញផ្កា និងមានទឹកចិញ្ចឹមគ្រាប់។ វាក៏កម្ចាត់ស្មៅ កាត់បន្ថយសត្វល្អិត និងងាយរើសគ្រាប់ពេលប្រមូលផល។ បើស្មៅដុះវិញដោយសារភ្លៀង ភ្ជួរ ១-២ ដងទៀត។
+A (en): Before or after Pchum Ben, plough and/or cut weeds to dry the topsoil, reduce water uptake and keep subsoil moisture longer. This helps flushing and flowering and leaves water for filling nuts. It also clears weeds, reduces pests and makes nut collection easier. If weeds regrow after rain, plough 1-2 more times.
+
+#109 p.58-59 [VERIFY NUMBERS]
+Q: ត្រួយទី១ ចាស់ហើយ បាញ់អីឲ្យចេញត្រួយផ្កា (ត្រួយទី២)? / Flush 1 is mature — what do I spray to bring out the flower flush (flush 2)?
+A (km): ពេលត្រួយទី១ ចាស់ ឬជិតចាស់ បាញ់ជីស្លឹក P និង K ខ្ពស់ជាង N៖ NPK ៦-៣០-៣០, ៨-២៤-២៤, ៨-៥២-៣៤ ឬ ១០-៦០-១០ ចំនួន ៣-៤ គីឡូ + Atonik ៣ ដប + ថ្នាំជ្រាប ១ លីត្រ ក្នុងទឹក ១០០០ លីត្រ។ ៥-៧ ថ្ងៃក្រោយ បាញ់ម្ដងទៀត ថែមកាល់ស្យូមបូរ៉ុង។ មិនចាំបាច់ថ្នាំពុលទេ ព្រោះសត្វល្អិតមិនស៊ីស្លឹកចាស់។ រូបមន្តសន្សំ៖ ដើមខែ១០ លាយ KNO3 ៤ គីឡូ + Thiourea ០.៥ គីឡូ + ថ្នាំជ្រាប ១ លីត្រ ក្នុងទឹក ១០០០ លីត្រ បាញ់លើត្រួយទី១ ចាស់។
+A (en): When flush 1 is mature or nearly so, spray foliar feed with P and K higher than N: NPK 6-30-30, 8-24-24, 8-52-34 or 10-60-10 at 3-4 kg + Atonik 3 bottles + spreader 1 L per 1,000 L. Repeat 5-7 days later, adding calcium-boron. No insecticide needed because pests don't eat old leaves. Budget option: early month 10, KNO3 4 kg + Thiourea 0.5 kg + spreader 1 L per 1,000 L on mature flush 1.
+
+#110 p.59 [VERIFY NUMBERS]
+Q: កញ្ចុំផ្កាចេញហើយ មុនផ្ការីក ត្រូវបាញ់អី? / Panicles are out but not yet open — what should I spray?
+A (km): បាញ់ថ្នាំពុលដែលមានប្រសិទ្ធភាព + ជីស្លឹក NPK ស្មើគ្នា ដូចជា ២១-២១-២១ ២-៣ គីឡូ + Atonik ៣ ដប + ថ្នាំជ្រាប ១ លីត្រ + កាល់ស្យូមបូរ៉ុង សារាយសមុទ្រ អាមីណូអាស៊ីត ក្នុងទឹក ១០០០ លីត្រ ៧-១០ ឬ ១០-១៥ ថ្ងៃម្ដង ហើយឈប់ពេលផ្ការីក។ ត្រូវកម្ចាត់សត្វល្អិតឲ្យអស់មុនផ្ការីក ព្រោះបើរំលងបន្តិច ពិបាកកម្ចាត់ពេលផ្ការីក។ មុនផ្ការីក បាញ់ថ្នាំផ្សិត Copper Hydroxide ឬ Mancozeb ១-១.៥ គីឡូ ក្នុងទឹក ១០០០ លីត្រ ឲ្យសព្វ។ ជំហាននេះសំខាន់បំផុតសម្រាប់ផលខ្ពស់។
+A (en): Spray an effective insecticide + balanced foliar NPK such as 21-21-21 at 2-3 kg + Atonik 3 bottles + spreader 1 L + calcium-boron, seaweed and amino acids per 1,000 L, every 7-10 or 10-15 days, and stop when flowers open. Kill all pests before bloom; any left are hard to control during bloom. Before flowers open, spray Copper Hydroxide or Mancozeb at 1-1.5 kg per 1,000 L thoroughly. This step is the key to high yield.
+
+#111 p.59-60 [VERIFY NUMBERS]
+Q: ពេលផ្កាចន្ទីកំពុងរីក បាញ់ថ្នាំ ឬជីបានអត់? / Can I spray pesticide or fertilizer while flowers are open?
+A (km): ហាមបាញ់ញឹក ព្រោះរំខានការលំអង ហើយទឹកថ្នាំប៉ះលំអង ធ្វើឲ្យផ្កាជ្រុះ។ បើត្រូវបាញ់ ប្រើថ្នាំទម្រង់ SC ឬ SL កម្រិតត្រឹមត្រូវ លាយជី NPK ស្មើគ្នា មិនលើស ១ គីឡូ + Atonik ២-៣ ដប ក្នុងទឹក ១០០០ លីត្រ ១០-១៥ ឬ ១៥-២០ ថ្ងៃម្ដង រហូតគ្រាប់ជិតទុំ។ បើសត្វល្អិតផ្ទុះ អាចបាញ់ញឹកជាងនេះ រួចត្រឡប់ទៅ ១៥-២០ ថ្ងៃវិញ។
+A (en): Don't spray often: it disrupts pollination and liquid on the pollen makes flowers drop. If needed, use SC or SL products at label dose with balanced NPK no more than 1 kg + Atonik 2-3 bottles per 1,000 L, every 10-15 or 15-20 days until nuts are near ripe. During a pest outbreak you can spray more often, then return to every 15-20 days.
+
+#112 p.60-61, 63
+Q: ពេលផ្ការីក មានចំណុចអីខ្លះត្រូវចៀសវាងពេលបាញ់ថ្នាំ? / What must be avoided when spraying during bloom?
+A (km): (១)កុំបាញ់ជាអ័ព្ទ (បាញ់បុក) លើស្លឹក និងផ្កា ព្រោះផ្កាស្អិតជ្រុះ ក្ដិបជ្រុះ ត្រូវបាញ់ជាដំណក់ (២)កុំបាញ់ពេលក្ដៅលើស ៣៧ អង្សា បើចាំបាច់ បាញ់ព្រឹកព្រលឹម ឬយប់ (៣)កុំប្រើលើសកម្រិត ឬថ្នាំទម្រង់ EC ដូចជា Cypermethrin និង Chlorpyrifos (៤)កុំប្រើធុង ឬម៉ាស៊ីនបាញ់ដែលនៅសល់ថ្នាំស្មៅ មិនបានលាងស្អាត (៥)ប្ដូរប្រភេទថ្នាំ កុំឲ្យសត្វល្អិតស៊ាំ។
+A (en): (1) Don't fog-spray leaves and flowers: flowers stick and drop, and small fruit drops; spray in proper droplets. (2) Don't spray above 37°C; if you must, spray early morning or at night. (3) No overdosing and no EC products like Cypermethrin and Chlorpyrifos. (4) Don't use tanks or sprayers with herbicide residue that weren't cleaned properly. (5) Rotate products to avoid resistance.
+
+#113 p.60 [VERIFY NUMBERS]
+Q: ចន្ទីចាស់ ៧-៨ ឆ្នាំឡើង មានវិធីសន្សំថ្លៃបញ្ចុះផ្កាអត់? / Is there a cheaper induction method for trees over 7-8 years?
+A (km): មាន។ ដើមលើស ៧-៨ ឆ្នាំ ដែលមានស្លឹកគ្មានប្រយោជន៍ច្រើន អាចរំលងជំហានទី២ ឲ្យចេញត្រួយតែម្ដង ជាត្រួយផ្កា មិនបាច់មានត្រួយទី២។ ចាប់ផ្ដើមបាញ់ទម្លាក់ស្លឹក ពាក់កណ្ដាល ឬចុងខែ១០ ដីត្រូវមានសំណើមតិច ហើយ ៥ ថ្ងៃក្រោយបាញ់ទម្លាក់ស្លឹក បាញ់ជីស្លឹក P K ខ្ពស់ជាង N ថែម Atonik កាល់ស្យូមបូរ៉ុង អាមីណូអាស៊ីត ឲ្យត្រួយ និងផ្ការឹងមាំ។ ងាយចេញផ្កាខែ១១ តែផ្កាតូចជាងវិធីពីរត្រួយ។ ការពារសត្វល្អិត និងសន្សើមប្រៃ ដូចជំហានទី៤-៥។
+A (en): Yes. Trees over 7-8 years with many useless leaves can skip step 2 and flush only once, straight into the flower flush. Start the leaf-drop spray in mid or late month 10 with low soil moisture, and 5 days later spray foliar feed with P and K higher than N plus Atonik, calcium-boron and amino acids. Flowering in month 11 is easy, but flowers are smaller than with the two-flush method. Protect against pests and acid dew as in steps 4-5.
+
+#114 p.51-53
+Q: ចន្ទីអឹម២៣ ធម្មតាចេញត្រួយប៉ុន្មានដងក្នុងមួយរដូវ? / How many times does M23 normally flush per season?
+A (km): អាស្រ័យអាយុ និងដី៖ (១)ដើម ៥ ឆ្នាំចុះ ដីល្អ ជីគ្រប់ ចេញ ៤ ត្រួយ ពិបាកបញ្ចុះឲ្យព្រមគ្នា (២)ដីខ្សោយ អាយុ ៥-៦ ឡើង ចេញ ៣ ត្រួយ (៣)អាយុ ៦-៧ ឡើង ជីគ្រប់ ចេញ ២ ត្រួយ (៤)អាយុ ៧-៨ ឡើង ដីខ្សោយ មិនថែ ស្លឹកចាស់គ្មានប្រយោជន៍ ចេញតែ ១ ត្រួយ ជាត្រួយផ្កា ផ្ការីករដូវក្ដៅ ផ្លែជ្រុះ ផលទាប។ ប្រភេទ ២ ដល់ ៤ គួរបញ្ចុះផ្កាឲ្យព្រមគ្នា។ ផ្កាចេញក្រោយខែ១២ ច្រើនត្រូវកម្ដៅ និងសត្វល្អិត ផលធ្លាក់ លើកលែងមានភ្លៀងខុសរដូវ។
+A (en): It depends on age and soil: (1) under 5 years, good soil, well fed: 4 flushes, hard to synchronise; (2) poor soil, age 5-6+: 3 flushes; (3) age 6-7+, well fed: 2 flushes; (4) age 7-8+, poor soil, no care, useless old leaves: 1 flush only, the flower flush, blooming in the hot season with fruit drop and low yield. Types 2-4 should be induced. Most flowers emerging after month 12 meet heat and pests, so yield falls unless there is off-season rain.
+
+#115 p.44-45
+Q: ផ្កាអឹម២៣ វគ្គទី១ ទី២ ទី៣ ខុសគ្នាម៉េច? / How do M23's 1st, 2nd and 3rd flowerings differ?
+A (km): វគ្គទី១ ដើមខែ១១-២០ ធ្នូ ប្រហែល ១០-១៥% នៃមែក ច្រើនកើតក្ដិបល្អ។ វគ្គទី២ ដើមខែ១-ដើមខែ២ ប្រហែល ៧០-៧៥% តែច្រើនកើតក្ដិបមិនល្អ បើដីគ្មានសំណើមរដូវប្រាំង គ្មានភ្លៀងខុសរដូវ ហើយចាប់ផ្ដើមក្ដៅ ងាយត្រូវសត្វល្អិត និងផ្សិត។ វគ្គទី៣ ចុងខែ២-ដើមខែ៣ ១០-១៥% ជាពិសេសមែកខាងជើង ច្រើនកើតក្ដិបមិនល្អ ព្រោះក្ដៅ គ្រាប់គុណភាពទាប។ បើបញ្ចុះឲ្យវគ្គទី១ លើស ៥០% ផលខ្ពស់ជាងពូជផ្សេង តែត្រូវថែដល់ខែ៤។
+A (en): Flush 1: early month 11 to 20 December, about 10-15% of shoots, usually sets well. Flush 2: early month 1 to early month 2, about 70-75% of shoots, but often sets poorly if soil lacks dry-season moisture, there is no off-season rain and heat begins; prone to pests and fungus. Flush 3: late month 2 to early month 3, 10-15%, mostly north-side branches; poor set due to heat and lower nut quality. If induction pushes flush 1 above 50%, M23 out-yields other varieties, but care must continue to month 4.
+
+== F. ផ្កាជ្រុះ និងក្ដិបខ្មៅ · Flower Drop & Black Fruit ==
+#116 p.6-7, 61-63
+Q: ហេតុអីក្ដិបចន្ទីខ្មៅ ហើយជ្រុះ? / Why do young cashew fruits turn black and drop?
+A (km): មាន ៥ មូលហេតុធំៗ៖ (១)ពូជ និងដីគ្មានសំណើម៖ អឹម២៣ អាចកើតក្ដិបលើស ៣០ គ្រាប់/កញ្ចុំ ដើមក្រោម ៥ ឆ្នាំ ឬដីខ្សាច់គ្មានសំណើមរដូវប្រាំង ចិញ្ចឹមមិនអស់ ក្ដិបខ្មៅជ្រុះ (២)អាកាសធាតុ៖ ភ្លៀង សន្សើមប្រៃ ក្ដៅលើស ៣៧ អង្សា ត្រជាក់ក្រោម ២០ អង្សា សំណើមខ្យល់ក្រោម ៤៥% (៣)ខ្វះជី និងពន្លឺ (៤)សត្វល្អិត៖ ដង្កូវ មូសតែ ទ្រីប (៥)បាញ់ថ្នាំ ជី ឧបករណ៍ ឬពេលវេលាខុស។ ត្រូវតាមដានអាកាសធាតុ និងអ្វីដែលខ្លួនបានធ្វើ ដើម្បីរកមូលហេតុពិតមុនទិញថ្នាំ ព្រោះរកមូលហេតុខុស ដោះស្រាយខុស ខាតលុយ។
+A (en): 5 main causes: (1) variety and dry soil: M23 can set over 30 nuts per panicle, and trees under 5 years or on sandy soil without dry-season moisture can't feed them all, so they blacken and drop; (2) weather: rain, acid dew, above 37°C, below 20°C, humidity under 45%; (3) lack of nutrients and light; (4) pests: caterpillars, tea mosquito bug, thrips; (5) wrong spraying, fertilizer, equipment or timing. Track the weather and your own practices to find the real cause before buying products; a wrong diagnosis wastes money.
+Instruction: Bot should ask follow-up questions (tree age, soil, recent weather, what was sprayed) before answering.
+
+#117 p.61-62, 64
+Q: ក្ដិបចន្ទីខ្មៅ ក្រោយភ្លៀងរលឹមពេលថ្ងៃក្ដៅ មកពីអី? / Why did young fruit turn black after a light shower on a hot day?
+A (km): ពេលថ្ងៃក្ដៅលើស ៣៥ អង្សា ហើយស្រាប់តែភ្លៀងរលឹមបន្តិច (មិនជោកដី) ក្ដិបតូចៗស្ទើរតែខ្មៅខូចទាំងអស់។ ភ្លៀងជាប់ៗគ្នាច្រើនថ្ងៃ ក៏ធ្វើឲ្យផ្កាកំពុងរីកខូចបន្តបន្ទាប់។ គ្មានថ្នាំ ឬវិធីណាការពារភ្លៀងខុសរដូវបានល្អទេ។ តែក្រោយភ្លៀងធំ បើសំណើមខ្យល់ឡើង ៥០-៨០% និងសីតុណ្ហភាព ២២-៣៤ អង្សា ផ្កាដែលនៅសល់អាចកើតក្ដិបវិញ។ ចំពោះអឹម២៣ លើដីខ្សាច់ ភ្លៀងខុសរដូវជោកដី ឃ្លាតគ្នា ៧-១៥ ថ្ងៃ (មិនជាប់ៗ) ផ្ទុយទៅវិញឲ្យផលល្អ។
+A (en): When it's above 35°C and a light shower falls without soaking the soil, almost all small fruit blackens. Many days of continuous rain also keep destroying open flowers. No chemical or method reliably protects against off-season rain. After heavy rain, if humidity rises to 50-80% and temperature is 22-34°C, the surviving flowers can still set. For M23 on sandy soil, off-season rain that soaks the soil and comes 7-15 days apart (not continuous) actually gives good yield.
+
+#118 p.6, 61-62
+Q: ចន្ទីក្មេងកើតក្ដិបច្រើន តែជ្រុះស្ទើរអស់ ធម្មតាអត់? / Young trees set lots of fruit but most drop — is that normal?
+A (km): ធម្មតាសម្រាប់អឹម២៣។ ពូជនេះមានផ្កាទ្វេភេទច្រើន កើតក្ដិបលើសពីដើមអាចចិញ្ចឹមបាន ជាពិសេសដើមក្រោម ៤-៥ ឆ្នាំ ដែលឫសមិនទាន់ជ្រៅ លើដីខ្សាច់គ្មានសំណើមរដូវប្រាំង។ ក្ដិបខ្លះនឹងខ្មៅជ្រុះតាមធម្មជាតិ។ សំណើមខ្យល់ក្រោម ៤៥% ធ្វើឲ្យកាន់តែធ្ងន់ បើដើមក្រោម ៨ ឆ្នាំ។
+A (en): Normal for M23. It has many hermaphrodite flowers and sets more fruit than the tree can feed, especially trees under 4-5 years with shallow roots on sandy soil without dry-season moisture. Some fruit naturally blackens and drops. Humidity under 45% makes it worse on trees under 8 years.
+
+#119 p.60, 63, 67
+Q: ហេតុអីគេហៅ Cypermethrin និង Chlorpyrifos ថា «ថ្នាំក្ដៅ»? / Why are Cypermethrin and Chlorpyrifos called "hot chemicals"?
+A (km): វាជាថ្នាំទម្រង់ EC (ទឹកលាយប្រេង) ដែលបើប្រើពេលមានផ្កា និងក្ដិបតូចៗ ធ្វើឲ្យផ្កា និងក្ដិបខូច ទើបគេហៅថាថ្នាំក្ដៅ។ មុនផ្ការីក ប្រើបាន ហើយថោកជាង SC/SL សន្សំថ្លៃ។ ពេលផ្ការីក ត្រូវប្ដូរទៅថ្នាំទម្រង់ SC ឬម្សៅ ដូចជា Abamectin, Emamectin, Imidacloprid, Thiamethoxam, Chlorfenapyr, Fipronil។
+A (en): They are EC (oil-emulsion) products, and used on flowers and small fruit they damage them, hence "hot." Before bloom they're fine and cheaper than SC/SL. During bloom, switch to SC or powder products such as Abamectin, Emamectin, Imidacloprid, Thiamethoxam, Chlorfenapyr, Fipronil.
+
+== G. អាកាសធាតុ និងសន្សើមប្រៃ · Weather & Acid Dew ==
+#30
+Q: តើគួរប្រើថ្នាំកូវក្រាំងអ្វីខ្លះការពារជំងឺផ្សិតដែលកើតពីអ័ព្ទ/សន្សើម? / Which fungicides work against fog/dew-caused fungal disease?
+A (km): Copper Hydroxide, Hexaconazole, Azoxystrobin, Metalaxyl, Carbendazim, Propineb, Mancozeb, ឬ Zineb។
+A (en): Copper Hydroxide, Hexaconazole, Azoxystrobin, Metalaxyl, Carbendazim, Propineb, Mancozeb, or Zineb.
+
+#120 p.64-65
+Q: សន្សើមប្រៃ (សន្សើមអាស៊ីដ) ជាអ្វី ហើយមកពេលណា? / What is "acid dew" and when does it come?
+A (km): ចន្លោះចុងខែ១២ ដល់ដើមខែ២ ច្រើនមានអ័ព្ទ និងសន្សើមខ្លាំងជាប់ៗគ្នាច្រើនថ្ងៃ ដែលកសិករហៅថា សន្សើមប្រៃ ឬសន្សើមអាស៊ីដ។ វាធ្វើឲ្យកើតជំងឺផ្សិត បំផ្លាញផ្កាទាំងរីក ទាំងមិនទាន់រីក ទងកញ្ចុំ និងក្ដិបតូចៗឲ្យខ្មៅ ដូចភ្លៀងខុសរដូវជាប់ៗ។ តាមបទពិសោធន៍ច្រើនឆ្នាំ សន្សើមប្រៃច្រើនមកពេលខ្យល់បក់ពីត្បូង។ បើខ្យល់បក់ពីជើង ហើយមានសន្សើម មិនមែនសន្សើមប្រៃទេ។
+A (en): Between late month 12 and early month 2 there are often many consecutive days of fog and heavy dew, which farmers call "salty dew" or "acid dew." It triggers fungal disease that blackens open and unopened flowers, panicles and small fruit, like continuous off-season rain. From years of observation it mostly comes with wind from the south; dew with wind from the north is not acid dew.
+
+#121 p.65
+Q: ដឹងម៉េចថា សន្សើមព្រឹកនេះគ្រោះថ្នាក់ដល់ផ្កាចន្ទី ត្រូវបាញ់ថ្នាំផ្សិត? / How do I tell if this morning's dew is dangerous enough to spray fungicide?
+A (km): មើលព្រឹកព្រលឹម ៤ ចំណុចតាមលំដាប់៖ (១)មានអ័ព្ទ និងសន្សើមខ្លាំងក្នុងចម្ការឬទេ? បើគ្មាន ឈប់មើល។ (២)សំណើមខ្យល់លើស ៨២% ឬទេ? (មើលក្នុងកម្មវិធីអាកាសធាតុលើទូរស័ព្ទ) បើក្រោម ៨២% ឈប់មើល។ (៣)ទឹកសន្សើមស្រក់ពីដំបូលផ្ទះ ចុះលើដី ឬការ៉ូ ជាប់ៗគ្នាឬទេ? បើស្រក់មិនជាប់ (ជាចំណុចៗ) សន្សើមតិច មិនធ្ងន់ធ្ងរ។ (៤)ថ្ងៃភ្លឺច្បាស់មុនម៉ោង ៧ ព្រឹកឬទេ? បើភ្លឺមុន ៧ ព្រឹក សន្សើមស្ងួតលឿន ហានិភ័យតិច។ បើ ៧ ព្រឹកហើយនៅស្រអាប់ ហានិភ័យខ្ពស់។ ការសម្រេចត្រូវ សំខាន់ណាស់ ព្រោះបាញ់ថ្នាំផ្សិតខុសពេលផ្ការីក ខាតលុយ និងរំខានការលំអង។
+A (en): Check 4 things early morning, in order: (1) Is there heavy fog and dew in the farm? If not, stop. (2) Is humidity above 82% (check a phone weather app)? If below, stop. (3) Is dew dripping continuously from the roof onto the ground or cement? Spotty drips mean light dew, not serious. (4) Is the sun clear before 7 am? If yes, dew dries fast and risk is low; if still hazy after 7 am, risk is high. Getting this right matters: unnecessary fungicide during bloom wastes money and disrupts pollination.
+
+#122 p.66 [VERIFY NUMBERS]
+Q: សន្សើមប្រៃធ្លាក់ហើយ ត្រូវបាញ់ថ្នាំផ្សិតពេលណា? បើគ្មានថ្នាំ ធ្វើម៉េច? / After acid dew, when should fungicide be sprayed, and what if I have none?
+A (km): បាញ់ថ្នាំផ្សិតការពារមុនផ្ការីក ព្រោះផ្សិតរាលដាលលឿន ហើយយើងមិនដឹងថាសន្សើមប្រៃមកពេលណា។ តាមដានអាកាសធាតុរាល់ថ្ងៃ ពីដើមខែ១២ ដល់ខែ២ ដើម្បីដឹងសំណើម ២-៣ ថ្ងៃមុន។ ក្រោយសន្សើមប្រៃធ្លាក់ ត្រូវបាញ់ថ្នាំព្យាបាលភ្លាម បើយឺត ២-៣ ថ្ងៃ ស្ទើរគ្មានប្រសិទ្ធភាព។ បើគ្មានថ្នាំ អាចយកទឹកស្អាត pH ៦-៦.៥ បាញ់លាងដើមចន្ទីទាំងមូលម្ដង ភ្លាមក្រោយសន្សើមប្រៃធ្លាក់។ មកលើកទី២ ទី៣ បាញ់ម្ដងទៀត។ ថ្នាំផ្សិត៖ Copper Hydroxide, Hexaconazole, Azoxystrobin, Metalaxyl, Carbendazim, Propineb, Mancozeb, Zineb។
+A (en): Spray a preventive fungicide before bloom, because fungus spreads fast and acid dew can't be predicted. Watch the forecast daily from early month 12 to month 2 to know humidity 2-3 days ahead. After acid dew, spray a curative fungicide immediately; 2-3 days late is almost useless. With no fungicide, spray-wash the whole tree once with clean water at pH 6-6.5 right after the dew. Spray again for a 2nd or 3rd event. Fungicides: Copper Hydroxide, Hexaconazole, Azoxystrobin, Metalaxyl, Carbendazim, Propineb, Mancozeb, Zineb.
+
+#123 p.76
+Q: បាញ់ថ្នាំផ្សិតពេលណាល្អជាងគេក្នុងមួយថ្ងៃ? លាយជាមួយថ្នាំសត្វល្អិតបានអត់? / What time of day is best for fungicide, and can it be mixed with insecticide?
+A (km): ល្អបំផុតព្រឹកព្រលឹម ព្រោះថ្នាំស្ងួត ហើយជាប់លើស្លឹក ផ្កា ផ្លែ។ បើនៅមានទឹកសន្សើមលើស្លឹក គួរបន្ថែមបរិមាណថ្នាំផ្សិត។ ជាទូទៅ លាយថ្នាំផ្សិតជាមួយថ្នាំសម្លាប់សត្វល្អិតបាន តែកុំបន្ថែមអ័រម៉ូន ជីស្លឹក ឬអាហារបំប៉ន ព្រោះប្រតិកម្មធ្វើឲ្យថ្នាំថយប្រសិទ្ធភាព។
+A (en): Early morning is best because it dries and sticks to leaves, flowers and fruit. If dew is still on the leaves, increase the fungicide amount. Fungicide can generally be mixed with insecticide, but don't add hormones, foliar fertilizer or energy supplements: reactions reduce effectiveness.
+
+== H. សត្វល្អិត · Pests ==
+#39
+Q: តើត្រូវប្រើថ្នាំអ្វីព្យាបាលមូសតែ? / What treatment works for Tea Mosquito Bug?
+A (km): មុនចេញផ្កា (គ្មានផ្កាបុប្ផាទេ)៖ អាចប្រើ Cypermethrin ២៥% ឬ Chlorpyrifos (បែប EC)។ ពេលកំពុងចេញផ្កា (មានផ្កាបុប្ផារួច)៖ ប្តូរទៅប្រើ Abamectin, Emamectin, Imidacloprid, Thiamethoxam, Chlorfenapyr ឬ Fipronil (បែប SC ស្រាលជាង)។
+A (en): Before flowering (no buds present): can use EC-formulation Cypermethrin 25% or Chlorpyrifos. During flowering (buds/flowers present): switch to gentler SC-formulation Abamectin, Emamectin, Imidacloprid, Thiamethoxam, Chlorfenapyr, or Fipronil.
+
+#40
+Q: តើត្រូវប្រើថ្នាំអ្វីព្យាបាលដង្កូវរំសើក សត្វសីផ្លា និងសត្វចោះផ្លែ? / What treatment works for aphids, scale insects, and fruit-boring moths?
+A (km): កើតឡើងញឹកញាប់ខែ៣-៤ ជា ពិសេសនៅសាខាថ្មី។ ប្រើ Abamectin, Emamectin, Imidacloprid, Fipronil, Thiamethoxam ឬ Chlorfenapyr។ បើធ្ងន់ធ្ងរ បាញ់៣ដងចន្លោះពី៥ថ្ងៃ។
+A (en): Occurs frequently month 3–4, especially on young shoots. Use Abamectin, Emamectin, Imidacloprid, Fipronil, Thiamethoxam, or Chlorfenapyr. If severe, spray 3 rounds ~5 days apart.
+
+#41
+Q: តើត្រូវធ្វើដូចម្តេចជាមួយសត្វស្រមេីល (Thrips)? / How do I manage Thrips?
+A (km): កើតឡើងខែ១១ដល់ខែ៥ បង្កគ្រោះថ្នាក់ដល់ស្លឹកថ្មី ផ្កា និងផ្ទៃផ្លែ (ធ្វើឲ្យផ្លែមានស្នាមរបួស)។ ព្យាបាលដោយ Imidacloprid ៧០%, Fipronil ឬ Thiamethoxam។ ត្រូវបាញ់ឲ្យគ្រប់ទាំងក្រោមស្លឹកនិងលើស្លឹក មិនមែនតែ ផ្នែកខាងលើទេ។
+A (en): Occurs month 11 through month 5, damaging young leaves, flowers, and fruit surface (causes scarring). Treat with Imidacloprid 70%, Fipronil, or Thiamethoxam. Spray must cover both leaf undersides and tops, not just the top.
+
+#42
+Q: តើត្រូវធ្វើដូចម្តេចជាមួយសត្វចែស (Mealybugs)? / How do I manage Mealybugs?
+A (km): កើតឡើងចាប់ពីខែ១ តែងរកឃើញនៅជិតកន្លែងមានស្រមោច ព្រោះស្រមោច ចិញ្ចឹមចែសយកសំណើមផ្អែម។ បើឃើញស្រមោចច្រើននៅលើដើម ត្រូវប្រយ័ត្នចែសផងដែរ។ ដំបូងគួរកម្ចាត់ស្រមោច មុន បន្ទាប់មកប្រើ Imidacloprid ឬ Fipronil។
+A (en): Occurs from month 1 onward, often found near ant activity — ants farm mealybugs for their honeydew. If you see lots of ants on a tree, check for mealybugs too. Control the ants first, then use Imidacloprid or Fipronil.
+
+#43
+Q: តើត្រូវធ្វើដូចម្តេចជាមួយសត្វកន្សៃស/ខ្យង (Beetle & Weevil)? / How do I manage Beetle and Weevil pests?
+A (km): កើតឡើងខែ៦ដល់ខែ៣ បំផ្លាញសាខាថ្មីនិងគល់ដើម។ មុន ចេញផ្កា ប្រើ Cypermethrin ឬ Chlorpyrifos (EC)។ ពេលចេញផ្កា ប្តូរទៅ Abamectin, Emamectin, Imidacloprid, Lufenuron ឬ Buprofezin (SC)។ បាញ់ជាពិសេសនៅពេលកាត់មែក ព្រោះស្នាមកាត់ថ្មី ទាក់ទាញសត្វទាំងនេះ។
+A (en): Occurs month 6 through month 3, damaging young shoots and trunk. Before flowering, use Cypermethrin or Chlorpyrifos (EC). During flowering, switch to Abamectin, Emamectin, Imidacloprid, Lufenuron, or Buprofezin (SC). Spray especially around pruning time, since fresh cuts attract these pests.
+
+#44
+Q: តើអាចដឹងបានយ៉ាងណាថាដើមចន្ទីមានសត្វជូងឈើ (Stem Borer)? / How can I tell if a tree has a stem borer infestation?
+A (km): សត្វជូងឈើសាំងចូលក្នុងឈើតាមស្នាមរបួស/ស្នាម ប្រេះស្បែកឈើ ហើយស៊ីនៅខាងក្នុងអស់ពេលរាប់ខែ ដូច្នេះខូចខាតច្រើនតែមើលមិនឃើញរហូតដល់ធ្ងន់ធ្ងរ។ គ្រោះថ្នាក់ នេះលំបាកបំផុត ព្រោះថ្នាំបាញ់ស្តើងខាងក្រៅមិនអាចប៉ះពាល់ដល់ដង្កូវខាងក្នុងបានទេ។
+A (en): Stem borer larvae enter through wounds/bark cracks and feed inside the wood for months, so damage is often invisible until severe. This makes it especially dangerous — surface sprays can't reach larvae already inside the wood.
+
+#45
+Q: តើត្រូវការពារជូងឈើយ៉ាងណា ព្រោះថ្នាំបាញ់មិនអាចដល់ខាងក្នុងបាន? / Since sprays can't reach inside, how do I prevent stem borer?
+A (km): ការការពារសំខាន់ជាងការ ព្យាបាល៖ ជៀសវាងធ្វើឲ្យគល់ដើមមានរបួស បិទបាំងស្នាមកាត់មែកភ្លាមៗ រក្សាដើមឲ្យមានសុខភាពល្អដោយដាក់ជីគ្រប់ គ្រាន់ (ដើមខ្សោយងាយរងគ្រោះជាង) និងបាញ់ Cypermethrin ឬ Chlorpyrifos ការពារនៅលើសំបកគល់ និងជុំ វិញស្នាមកាត់មែក។
+A (en): Prevention matters more than treatment: avoid trunk wounds, seal pruning cuts promptly, keep the tree vigorous with adequate fertilizing (weak/stressed trees are more susceptible), and apply a preventive spray of Cypermethrin or Chlorpyrifos on the trunk surface and around pruning wounds.
+
+#46
+Q: តើមានវិធីណាការពារសត្វល្អិតដោយមិនប្រើថ្នាំគីមី? / Is there a non-chemical way to control pests?
+A (km): អាចប្រើអន្ទាក់ភ្លើងពេលយប់ ដើម្បីចាប់សត្វល្អិតរាត្រីមួយចំនួន (ដូចជាមេអំបៅ) ដែល មានប្រសិទ្ធភាពជាមួយអន្ទាក់ភ្លើងឬអន្ទាក់ទឹក។
+A (en): Light traps set up at night can catch certain nocturnal pests (like moths), whether using a light-and-sheet trap or a light-over-water trap.
+
+#124 p.66-67
+Q: មូសតែស៊ីចន្ទី ឃើញស្នាមបែបណា? ធ្វើម៉េចដឹងមុន? / What does tea mosquito bug damage look like, and how can I catch it early?
+A (km): មូសតែជញ្ជក់ទឹកត្រួយខ្ចី ធ្វើឲ្យត្រួយស្រពោនខ្មៅ រួចប្រែជាពណ៌ច្រែះ ហើយឈប់លូត។ ១-១.៥ ខែក្រោយ ទើបចេញមែក និងត្រួយថ្មីពីខាងក្រោម ហើយបើមិនកម្ចាត់អស់ វាបំផ្លាញបន្តទៀត។ ធ្ងន់ធ្ងរ អាចខូចត្រួយ ៨០-៩៥% ចន្ទីចេញត្រួយ និងផ្កាមិនបាន ឬចេញយឺត។ វាក៏ជញ្ជក់កញ្ចុំផ្កា និងក្ដិប ឲ្យខ្មៅ ហើយសំបកគ្រាប់មានស្នាមខ្មៅ។ វាតូច ពិបាកមើល កសិករច្រើនដឹងតែពេលត្រួយប្រែពណ៌ច្រែះ ដែលយឺតហើយ ដូច្នេះត្រូវពិនិត្យត្រួយខ្ចីញឹកៗ ពីខែ៦-៧ ដល់ខែ១-២។
+A (en): It sucks sap from young shoots, which wilt black, then turn rust-brown and stop growing. After 1-1.5 months side shoots appear lower down, and if the bugs aren't all killed they keep attacking. Heavy infestations can destroy 80-95% of flushes, so the tree can't flush or flower, or flowers late. It also sucks panicles and young fruit, blackening them and spotting nut shells. It's small and hard to see; many farmers notice only when shoots turn rust-coloured, which is too late. Check young flushes often from month 6-7 to month 1-2.
+
+#125 p.67 [VERIFY NUMBERS]
+Q: មូសតែផ្ទុះ ត្រូវបាញ់ថ្នាំប៉ុន្មានដង? / During a tea mosquito bug outbreak, how many times should I spray?
+A (km): មូសតែមួយជីវិត ២៥-៣០ ថ្ងៃ ពងបាន ១០០-២០០ ឡើង ហើយកូនចាប់ផ្ដើមបំផ្លាញពីអាយុ ៥-៧ ថ្ងៃ។ ពេលផ្ទុះ បាញ់ ៣ ដង៖ ថ្ងៃទី១, ថ្ងៃទី៣ ឬទី៥ ក្រោយលើកទី១, និងថ្ងៃទី៧ ក្រោយលើកទី២។ លើកទី១ សម្លាប់កូន និងមេ លើកទី២ សម្លាប់កូនទើបញាស់ លើកទី៣ សម្អាតអស់ និងការពារត្រួយថ្មី។ កាត់មែកឲ្យស្រឡះ ពន្លឺចូល ខ្យល់ចេញចូល ជួយកាត់បន្ថយមូសតែ និងងាយបាញ់។
+A (en): One generation takes 25-30 days, each female lays 100-200+ eggs, and nymphs start damaging from 5-7 days old. In an outbreak spray 3 times: day 1, day 3 or 5 after the first, and day 7 after the second. The 1st kills nymphs and adults, the 2nd kills newly hatched ones, the 3rd cleans up and protects new flush. Pruning for light and airflow reduces the bug and makes spraying easier.
+
+#126 p.67-68 [VERIFY NUMBERS]
+Q: ដង្កូវរុំស្លឹក ស៊ីផ្កា ចោះផ្លែ ត្រូវកម្ចាត់ម៉េច? / How do I control leaf-rolling, flower-eating and fruit-boring caterpillars?
+A (km): ដង្កូវទាំងនេះមានពេញមួយឆ្នាំ តែច្រើនពេលចន្ទីចេញត្រួយ ដល់មានផ្កា និងផ្លែ។ វារុំស្លឹក រុំផ្កាលាក់ខ្លួនគេចថ្នាំ ហើយធ្វើសំបុកក្នុងនោះ មុនក្លាយជាមេអំបៅ។ មួយជីវិត ៣៥-៤៥ ថ្ងៃ មេអំបៅពងតែមួយយប់ ក្លាយជាដង្កូវ។ ត្រូវកម្ចាត់មុនចន្ទីមានផ្កា និងក្ដិប។ ពេលផ្ការីក ប្រើ Abamectin, Emamectin, Imidacloprid, Fipronil, Thiamethoxam ឬ Chlorfenapyr ដែលមិនធ្វើឲ្យផ្កាជ្រុះ បាញ់ឲ្យសព្វ ជាដំណក់ (កុំបាញ់បុក)។ ពេលផ្ទុះ បាញ់ ៣ ដង៖ លើកទី២ ៣-៥ ថ្ងៃក្រោយលើកទី១ លើកទី៣ ៥-៧ ថ្ងៃក្រោយលើកទី២។
+A (en): These caterpillars are present all year but peak from flushing to flowering and fruiting. They roll leaves and flowers to hide from sprays and pupate inside before becoming moths. Life cycle 35-45 days; a moth lays eggs in one night. Kill them before flowering and fruit set. During bloom use Abamectin, Emamectin, Imidacloprid, Fipronil, Thiamethoxam or Chlorfenapyr (products that don't cause flower drop), sprayed thoroughly in droplets, not fog. In an outbreak spray 3 times: 2nd 3-5 days after the 1st, 3rd 5-7 days after the 2nd.
+
+#127 p.68
+Q: ទ្រីប (ក្រាភ្លើង ឬស្រមើល) មើលម៉េចឃើញ? / How can I spot thrips?
+A (km): ទ្រីបច្រើនមកចុងរដូវភ្លៀង ពីខែ១១ ដល់ខែ៥ តូចប៉ុនស្រមើល ពិបាកមើលនឹងភ្នែកទទេ។ ដើម្បីពិនិត្យ បេះត្រួយស្លឹកខ្ចីពណ៌លឿងស្រាល មកមើលជិតៗ។ ពេលផ្ការីក យកក្រដាសស ឬទូរស័ព្ទដៃ ដាក់ក្រោមកញ្ចុំផ្កា រួចអង្រួន បើមាន នឹងឃើញវាជ្រុះលើក្រដាស ហើយកម្រើក។ បើមានច្រើនពេលផ្ការីក ចន្ទីមិនអាចកើតក្ដិបបានទេ។
+A (en): Thrips peak at the end of the rainy season, month 11 to month 5. They're tiny (the name ស្រមើល refers to their size) and hard to see with the naked eye. Pick light yellow-green young leaves and look closely. During bloom, hold white paper or a phone screen under a panicle and shake it: if thrips are present they fall onto it and move. Many thrips at bloom means the tree can't set fruit.
+
+#128 p.68-69 [VERIFY NUMBERS]
+Q: បាញ់ទ្រីបមិនងាប់ ត្រូវធ្វើម៉េច? / Thrips aren't dying from spraying — what should I do?
+A (km): ទ្រីបជាសត្វជញ្ជក់ ត្រូវប្រើថ្នាំជ្រាប ដូចជា Imidacloprid 70%, Fipronil, Thiamethoxam។ ជីវិតខ្លី ៣០-៤៥ ថ្ងៃ កើតកូនលឿន ស៊ាំថ្នាំលឿន ប្រើថ្នាំមិនគ្រប់កម្រិតមិនងាប់ទេ។ ពេលផ្ការីករដូវក្ដៅ ច្រើនមានដង្កូវផង ត្រូវប្រើថ្នាំ ២ មុខលាយគ្នា និង/ឬបាញ់ឆ្លាស់គ្នា។ បាញ់ឲ្យសព្វ ជាដំណក់ កុំបាញ់បុក។ ផ្ទុះ បាញ់ ៣ ដង ៥-៧ ថ្ងៃម្ដង។
+A (en): Thrips suck sap, so use systemic products such as Imidacloprid 70%, Fipronil, Thiamethoxam. With a short 30-45 day life cycle they multiply fast and become resistant quickly; under-dosing won't kill them. During hot-season bloom they often come with caterpillars, so use a 2-product mix and/or rotate. Spray thoroughly in droplets, not fog. In an outbreak, 3 sprays 5-7 days apart.
+
+#129 p.69
+Q: ចៃស (ចៃក្រមួន) មកពីណា ហើយហេតុអីវាឆ្លងពីដើមមួយទៅដើមមួយ? / Where do mealybugs come from and why do they spread tree to tree?
+A (km): ចៃសច្រើនមកពីខែ១ ដល់ដើមរដូវភ្លៀង ជាពិសេសពេលមានទ្រីប (ក្រាភ្លើង)។ វារស់ក្រោមដីជុំវិញគល់ ឡើងតាមដើមទៅជ្រកក្រោមស្លឹក ត្រួយ ផ្កា និងផ្លែ ជញ្ជក់ទឹក។ ស្រមោចក្រហមនាំវាពីមែកដើមមួយ ទៅមែកដើមមួយទៀតដែលប៉ះគ្នា។ ត្រូវពិនិត្យចៃស និងស្រមោចក្រហមញឹកៗ ហើយកម្ចាត់ពេលនៅតិច។ មួយជីវិត ៥៥-៦០ ថ្ងៃ ពងរាប់រយ តែងាប់ឯងពេលភ្លៀងជាប់ៗក្នុងរដូវភ្លៀង។
+A (en): Mealybugs peak from month 1 to the start of the rainy season, especially when thrips are around. They live in the soil around the trunk base, climb up to shelter under leaves, flushes, flowers and fruit, and suck sap. Red ants carry them between trees whose branches touch. Check for mealybugs and red ants often and control them early. Life cycle 55-60 days with hundreds of eggs, but they die off in continuous rainy-season rain.
+
+#130 p.70 [VERIFY NUMBERS]
+Q: ប្រើសាប៊ូលាងចាន កម្ចាត់ចៃសម៉េច? / How do I use dish soap to control mealybugs?
+A (km): ចៃសមានក្រមួនរុំ ពិបាកកម្ចាត់។ ពេលនៅតិច បាញ់តែដើមដែលមាន កម្រិតខ្ពស់បន្តិច ឬកាត់ត្រួយមានចៃសចោល។ មុនផ្ការីក លាយសាប៊ូលាងចាន ៤-៥ លីត្រ ក្នុងទឹក ១០០០ លីត្រ បាញ់ឲ្យជោកគល់ ដើម និងដីជុំវិញគល់ ជាពិសេសក្រោមស្លឹក និងកន្លែងមានចៃស យ៉ាងតិច ៣ ដង ៣-៥ ថ្ងៃម្ដង។ លើកទី២ ទី៣ អាចលាយ Imidacloprid ឬ Fipronil និងថ្នាំជ្រាប/ស្អិត។ ពេលផ្ការីក បន្ថយសាប៊ូមកត្រឹម ១ លីត្រ ក្នុងទឹក ១០០០ លីត្រ បូក Imidacloprid ឬ Fipronil បាញ់ ៣ ដង ៣-៥ ថ្ងៃម្ដង។
+A (en): Their waxy coating makes them hard to kill. When few, spray only infested trees at a slightly higher dose, or cut and destroy infested shoots. Before bloom: dish soap 4-5 L per 1,000 L water, soaking the trunk base, trunk and surrounding soil, especially under leaves and infested spots, at least 3 times 3-5 days apart. Add Imidacloprid or Fipronil and a spreader/sticker on the 2nd and 3rd sprays. During bloom: cut soap to 1 L per 1,000 L plus Imidacloprid or Fipronil, 3 sprays 3-5 days apart.
+
+#131 p.70-71
+Q: សត្វគោម៉ និងខ្ទុង ស៊ីផ្កាចន្ទី ត្រូវបាញ់ពេលណា? / When should I spray for beetles and weevils eating flowers?
+A (km): វាមកពីខែ៦ ដល់ខែ៣ ស៊ីត្រួយ ផ្កា និងក្ដិបតូចៗ។ ខ្ទុងចេញរកស៊ីពេលយប់ ដូច្នេះបាញ់ពេលយប់ទើបមានប្រសិទ្ធភាព ហើយលាយថ្នាំជ្រាប/ស្អិត។ គោម៉ (ចៃអង្រ្កង) ស៊ីពេលថ្ងៃ ត្រូវបាញ់ពេលថ្ងៃ។ វាលាក់ខ្លួនក្នុងប្រេះដីជុំវិញគល់ ត្រូវបាញ់ដីជុំវិញគល់ផង។ មុនផ្ការីក ប្រើ Cypermethrin, Chlorpyrifos ពេលផ្ការីក ប្រើ Abamectin, Emamectin, Imidacloprid, Lufenuron, Buprofezin។ ដាក់អំពូលចាប់សត្វពីដើមរដូវភ្លៀង ដើម្បីកាត់បន្ថយខ្ទុង។
+A (en): They're active from month 6 to month 3, eating young flush, flowers and small fruit. Weevils feed at night, so spray at night with a spreader/sticker. Chafer beetles feed by day, so spray by day. Both hide in soil cracks around the trunk, so spray the soil there too. Before bloom use Cypermethrin or Chlorpyrifos; during bloom use Abamectin, Emamectin, Imidacloprid, Lufenuron or Buprofezin. Set light traps from the start of the rainy season to cut weevil numbers.
+
+#132 p.71-72
+Q: ដើមចន្ទីមានដង្កូវដួងស៊ីក្នុងដើមហើយ ត្រូវធ្វើម៉េច? / A stem borer is already inside the tree — what should I do?
+A (km): យកដែកកោសផ្ទុះ យកកូនដង្កូវចេញពីដើម ឬគល់ឲ្យអស់ រួចលាបប្រេងម៉ាស៊ីនចាស់ ឬលាមកគោលាយប្រេងម៉ាស៊ីន លើស្នាម ឬបាញ់ថ្នាំជ្រាបឲ្យជោកកន្លែងនោះ។ បន្ទាប់មក ស្រោចទឹកអំបិល ឬរោយថ្នាំកណ្ដៀរជុំវិញគល់។ វិធីថ្មីមានប្រសិទ្ធភាពខ្ពស់៖ ខួងរន្ធតូចៗដោយម៉ាស៊ីនស្វានអគ្គិសនី ហើយយកស៊ីរ៉ាំងចាក់ថ្នាំចូលក្នុងដើម ត្រង់កន្លែងដង្កូវកំពុងស៊ី។ ដង្កូវនេះ មិនមែនដង្កូវដួងដូងទេ។
+A (en): Use a sharp tool to dig the larvae out of the trunk or base, then paint the wound with used engine oil or cow dung mixed with engine oil, or soak the area with a systemic insecticide. Then drench the soil around the base with salt water or sprinkle ant powder. A newer, very effective method: drill small holes with an electric drill and inject insecticide with a syringe where the larvae are feeding. This is not the same larva as the coconut palm weevil grub.
+
+#133 p.36, 71 [VERIFY NUMBERS]
+Q: មេដង្កូវដួង ពងលើដើមចន្ទីខែណា? ក្រោយកាត់មែក ត្រូវលាបអី? / When do stem borer beetles lay eggs, and what should I paint on pruning cuts?
+A (km): មេដង្កូវដួងជាសត្វស្លាបរឹង ពងលើស្នាមរបួសដើមចន្ទី ពីខែ៥ ដល់ខែ៨ ជាពិសេសក្រោយកាត់មែក។ កូនស៊ីដើម និងឫស ប្រហែល ១៥០ ថ្ងៃ ទើបក្លាយជាដឹកឌឿ ហើយអាចសម្លាប់ដើមទាំងមូល តែមើលមិនសូវឃើញ។ សម្អាតជុំវិញគល់ កុំធ្វើឲ្យគល់ ឬមែកធំមានរបួស។ កាត់មែកធំជាង ៣ ស.ម ត្រូវលាបភ្លាម ដោយជូរខៀវលាយកំបោរកសិកម្ម ឬលាមកគោលាយប្រេងម៉ាស៊ីនចាស់/ម៉ាស៊ូត ហើយបាញ់ Cypermethrin 25% ឬថ្នាំផ្សេងដែលមានប្រសិទ្ធភាព លើដើមទាំងអស់ ២ ដង ១០-១៥ ថ្ងៃម្ដង។
+A (en): The adult is a hard-shelled beetle that lays eggs in trunk wounds from month 5 to month 8, especially after pruning. Larvae bore the trunk and roots for about 150 days before pupating and can kill the whole tree with little visible sign. Keep the base clean and avoid wounding the trunk or big branches. Paint cuts over 3 cm immediately with copper sulphate mixed with agricultural lime, or cow dung mixed with used engine oil or diesel, and spray Cypermethrin 25% or another effective product on all trees twice, 10-15 days apart.
+
+#134 p.66-72
+Q: សត្វល្អិតចន្ទីនីមួយៗ មកខែណា? ខែណាតិចជាងគេ? / When does each cashew pest occur, and which months have the fewest?
+A (km): តាមសៀវភៅ មានតែចុងខែ១១ ដល់ខែ១ ទេ ដែលសមស្របបំផុតសម្រាប់កើតក្ដិប ហើយសត្វល្អិតតិចជាងគេ។ សង្ខេប៖ មូសតែ ខែ៦-៧ ដល់ខែ១-២ | ទ្រីប ខែ១១ ដល់ខែ៥ | ចៃស ខែ១ ដល់ដើមរដូវភ្លៀង | គោម៉ និងខ្ទុង ខែ៦ ដល់ខែ៣ | ដង្កូវដួងពង ខែ៥-៨ | ដង្កូវស៊ីផ្កា មានពេញឆ្នាំ តែច្រើនពេលចេញត្រួយ ដល់មានផ្លែ។
+A (en): Per the book, only late month 11 to month 1 is ideal for fruit set with the fewest pests. Summary: tea mosquito bug month 6-7 to month 1-2 | thrips month 11 to month 5 | mealybugs month 1 to start of rains | beetles and weevils month 6 to month 3 | stem borer egg-laying month 5-8 | flower-eating caterpillars all year, peaking from flushing to fruiting.
+
+== I. ជ្រើស លាយ និងបាញ់ថ្នាំ · Choosing, Mixing & Spraying Pesticides ==
+#27
+Q: តើត្រូវប្រុងប្រយ័ត្នអ្វីខ្លះពេលបាញ់ថ្នាំកសិកម្មនៅដំណាក់កាលចេញផ្កា? / What precautions should I take when spraying pesticide during the flowering period?
+A (km): មុនចេញផ្កា ជៀសវាងថ្នាំបែប EC (Cypermethrin, Chlorpyrifos) ព្រោះខ្លាំងពេក — ប្រើ SC ឬ SL វិញ។ អាចបាញ់ថ្នាំកូវ ក្រាំងជាមុនម្តងមុនផ្កាចេញ។ កំឡុងផ្កាកំពុងចេញ (ជាពិសេស១០-១៤ថ្ងៃដំបូង) ជៀសវាងបាញ់ត្រង់ផ្កា/ក្នុងផ្កា។ បើត្រូវ បាញ់ព្រោះមានសត្វល្អិតច្រើន ជ្រើសរើសពេលល្ងាចត្រជាក់ កុំបាញ់ពេលមានសត្វល្អិតជួយបំបែកភាគច្រើនកំពុងធ្វើ ការ។
+A (en): Before flowering, avoid EC-formulation products (Cypermethrin, Chlorpyrifos) as they're harsher — use SC or SL instead. One preventive fungicide spray before bud-break is fine. During flower emergence (especially the first 10–14 days), avoid spraying directly on flowers. If a pest outbreak forces spraying, choose cooler evening hours and avoid times when pollinators are active.
+
+#32
+Q: តើគួរប្រុងប្រយ័ត្នអ្វីមួយបើប្រើថ្នាំច្រើនប្រភេទបញ្ចូលគ្នា? / What's the risk of combining too many products in one spray?
+A (km): ការលាយជីនិងអរម៉ូនច្រើនប្រភេទក្នុងពេលតែមួយអាចប្រថុយ ប្រថាន — កុំបញ្ចូលគ្នាច្រើនពេក។
+A (en): Combining many fertilizers/hormones at once is risky — avoid over-combining products in a single application.
+
+#49
+Q: តើសម្គាល់ថ្នាំកសិកម្មក្លែងក្លាយ (fake) យ៉ាងណា? / How can I spot a counterfeit pesticide?
+A (km): ៣សញ្ញា៖ (១)គ្មានស្លាកព្រមានគ្រោះថ្នាក់ច្បាស់លាស់ (២)គ្មានព័ត៌មានសារធាតុ/ក្រុមហ៊ុន ផលិត/អ្នកនាំចូលច្បាស់លាស់ (៣)ទិញពីអ្នកលក់មិនមានអាជ្ញាប័ណ្ណ។ ផលិតផលពិតគួរទិញពីហាងលក់សម្ភារកសិកម្ម ដែលមានអាជ្ញាប័ណ្ណប៉ុណ្ណោះ។
+A (en): 3 warning signs: (1) missing clear hazard warning labels; (2) missing clear ingredient/manufacturer/importer info; (3) bought from an unlicensed seller. Genuine products should only be bought from licensed agricultural input shops.
+
+#51
+Q: តើទម្រង់ថ្នាំបែប EC ខុសពី SC/SL យ៉ាងណា ហើយហេតុអ្វីសំខាន់? / How does ECformulation differ from SC/SL, and why does it matter?
+A (km): EC (Emulsifiable Concentrate) មានប្រេង/សារធាតុរំលាយ ខ្លាំងជាង អាចឆេះផ្កា/ជាលិកាកូនឈើ។ SC (Suspension Concentrate) និង SL (Soluble Liquid) មានមូលដ្ឋានទឹក ស្រាលជាង ត្រូវការជាចម្បងសម្រាប់បាញ់ក្នុងដំណាក់ កាលចេញផ្កា។
+A (en): EC (Emulsifiable Concentrate) is oil/solvent-based, harsher, and can burn flowers/tender tissue. SC (Suspension Concentrate) and SL (Soluble Liquid) are water-based and gentler — these are the preferred choice for spraying during flowering.
+
+#52
+Q: តើអាចលាយថ្នាំកសិកម្មពីរប្រភេទចូលគ្នាបានទេ? / Can I mix two different pesticides together?
+A (km): ជាទូទៅមិនណែនាំទេ លុះត្រាតែដឹងច្បាស់ថាចូលគ្នាបាន ព្រោះប្រតិកម្មគីមីអាចកាត់បន្ថយ ប្រសិទ្ធភាពរបស់ថ្នាំទាំងពីរ។ បើចាំបាច់ត្រូវសាកល្បងលាយបរិមាណតូចមុន។
+A (en): Generally not recommended unless the combination is proven compatible — chemical interactions can reduce the effectiveness of both products. If necessary, test a small batch first.
+
+#54
+Q: តើហេតុអ្វីត្រូវប្តូរប្រភេទសារធាតុសកម្ម (active ingredient) ជាប្រចាំ? / Why should I rotate active ingredients?
+A (km): ការប្រើសារធាតុសកម្មតែមួយម្តងហើយម្តងទៀត អាចធ្វើឲ្យសត្វល្អិត បង្កើតភាពធន់ (resistance)។ គួរប្តូរប្រភេទ ដូចជា Lufenuron និង Buprofezin ជាជម្រើសផ្សេងបន្ថែមលើ ប្រភេទផ្សេងទៀត។
+A (en): Repeatedly using the same active ingredient allows pests to develop resistance. Rotate between product classes — for example, Lufenuron and Buprofezin as alternatives alongside other product types.
+
+#55
+Q: តើត្រូវរក្សាទុកថ្នាំកសិកម្មយ៉ាងណា? / How should pesticides be stored?
+A (km): ទុកឲ្យឆ្ងាយពីពន្លឺថ្ងៃដោយផ្ទាល់និងកម្តៅ ក្នុងកន្លែងត្រជាក់ស្ងួត ព្រោះកម្តៅ/សំណើមធ្វើឲ្យសារធាតុសកម្មខូច ប្រសិទ្ធភាពតាមពេលវេលា។ ជៀសវាងកូនកូនកខ្វក់រវាងសារធាតុគីមីខុសគ្នាពេលលាយ។
+A (en): Keep away from direct sunlight and heat, in a cool, dry place — heat/moisture degrades the active ingredient over time. Avoid cross-contamination between different chemicals when mixing.
+
+#135 p.73
+Q: ទិញថ្នាំពុល ត្រូវមើលឈ្មោះថ្នាំ ឬសារធាតុសកម្ម? / When buying pesticide, should I look at the brand name or the active ingredient?
+A (km): មើលសារធាតុសកម្ម (ឈ្មោះគីមី) មិនមែនឈ្មោះម៉ាកទេ។ សារធាតុនីមួយៗ សម្លាប់សត្វល្អិតខុសគ្នា (ដង្កូវ សត្វជញ្ជក់ ពីងពាង សត្វស្លាបរឹង) ហើយសម្លាប់តាមរបៀបខុសគ្នា (ប៉ះផ្ទាល់ ឬជ្រាបចូលស្លឹក)។ ម៉ាកខុសគ្នា អាចមានសារធាតុដូចគ្នា ដូច្នេះលាយច្រើនម៉ាកដោយមើលតែឈ្មោះ អាចលើសកម្រិត ធ្វើឲ្យផ្កា និងក្ដិបជ្រុះ។
+A (en): The active ingredient, not the brand. Each active ingredient targets different pests (caterpillars, sucking insects, mites, hard-shelled beetles) and works differently (contact or systemic). Different brands can contain the same ingredient, so mixing several brands by name alone can overdose and make flowers and fruit drop.
+
+#136 p.73
+Q: Cypermethrin 15%, 25%, 30% ខុសគ្នាម៉េច? ថ្នាំទុកបានប៉ុន្មានឆ្នាំ? / What's the difference between 15%, 25% and 30% Cypermethrin, and how long does pesticide last?
+A (km): ភាគរយសារធាតុសកម្មខ្ពស់ ថ្លៃជាង និងខ្លាំងជាង។ ថ្នាំភាគច្រើនប្រើបានមិនលើស ៣ ឆ្នាំក្រោយផលិត។ ផុតកំណត់ ថយប្រសិទ្ធភាព ឬគ្មានប្រសិទ្ធភាពតែម្ដង។ មុនទិញ ត្រូវមើលថ្ងៃផលិត និងថ្ងៃផុតកំណត់។
+A (en): A higher active-ingredient % costs more and is stronger. Most pesticides last no more than 3 years after production; expired product is weaker or useless. Check production and expiry dates before buying.
+
+#137 p.74
+Q: វណ្ណពណ៌នៅលើដប ឬកញ្ចប់ថ្នាំពុល ប្រាប់អី? / What does the colour band on a pesticide label mean?
+A (km): ពណ៌ផ្ទៃមេឃ (ខៀវខ្ចី) = ពុលតិច, លឿង = ពុលមធ្យម, ក្រហម = ពុលខ្លាំង (ខ្លាំង ហើយនៅយូរ ច្បាប់ហាមមិនឲ្យប្រើ), បៃតង = ថ្នាំពុលជីវសាស្ត្រ។ ប្រើតែថ្នាំដែលមានចុះបញ្ជីពីក្រសួងកសិកម្ម ព្រោះថ្នាំមិនចុះបញ្ជី ខុសច្បាប់។
+A (en): Sky blue = low toxicity, yellow = medium, red = highly toxic (strong and long-lasting, banned by law), green = biological pesticide. Only use products registered with the Ministry of Agriculture; unregistered products are illegal.
+
+#138 p.74
+Q: ក្រុមហ៊ុនថ្នាំថ្មី លក់ថោក គួរទិញអត់? / Should I buy cheap pesticide from a company I don't know?
+A (km): មិនគួរជ្រើសក្រុមហ៊ុនដែលមិនធ្លាប់ស្គាល់ ទោះថោក ព្រោះថ្នាំក្លែងក្លាយ ឬគុណភាពទាប ខាតពេល លុយ និងទិន្នផល។ បើចង់សាក ទិញតិចមកសាកសិន គុណភាពល្អ ទើបទិញច្រើន។ ជ្រើសអ្នកលក់ដែលទុកចិត្ត ទទួលស្គាល់ពីក្រសួងកសិកម្ម និង/ឬមានចម្ការខ្លួនឯង ព្រោះគេដឹងថាថ្នាំណាសុទ្ធ ណាក្លែង ហើយប្រាប់វិធីប្រើឲ្យមានប្រសិទ្ធភាព និងចំណេញ។
+A (en): Avoid unfamiliar companies even if cheap: fake or low-quality products cost you time, money and yield. To test one, buy a small amount first and buy more only once quality is proven. Choose dealers you trust, recognised by the Ministry of Agriculture and/or who farm themselves; they know which products are genuine and how to use them effectively and cheaply.
+
+#139 p.75
+Q: លាយថ្នាំច្រើនមុខក្នុងធុង ត្រូវដាក់មុខណាមុន? / When mixing several products in a tank, what order should they go in?
+A (km): ដាក់ថ្នាំម្សៅ (WG, WP, SP, WDG) មុន បន្ទាប់ថ្នាំទឹក (SC, SL) បន្ទាប់ថ្នាំជ្រាប ឬថ្នាំស្អិត ហើយចុងក្រោយថ្នាំប្រេង (EC, ME, EW, OD...)។ លាយមុខនីមួយៗក្នុងធុងទឹក ១៥-២០ លីត្រសិន ទើបចាក់ចូលធុងធំ ហើយកូរឲ្យសព្វ។ កុំលាយថ្នាំគីមីលើស ៣ មុខ ឬលាយថ្នាំគីមីជាមួយថ្នាំជីវសាស្ត្រ កុំចាក់ថ្នាំច្រើនមុខរួមគ្នា រួចទើបចាក់ទឹក។ ប្រើទឹកស្អាត pH ៦-៧ សីតុណ្ហភាពក្រោម ៣៥ អង្សា។
+A (en): Powders (WG, WP, SP, WDG) first, then liquids (SC, SL), then spreader/sticker, and oil-based (EC, ME, EW, OD...) last. Pre-mix each in a 15-20 L bucket before adding to the big tank, and stir well. Don't mix more than 3 chemical pesticides, don't mix chemical with biological pesticides, and don't pour products together before adding water. Use clean water at pH 6-7 and below 35°C.
+
+#140 p.75
+Q: ថ្នាំលាយហើយ ទុកបាញ់ថ្ងៃស្អែកបានអត់? / Can mixed spray be kept and used the next day?
+A (km): មិនបានទេ។ ថ្នាំលាយរួច ត្រូវបាញ់ឲ្យអស់ក្នុងពេលនោះតែម្ដង កុំទុកមួយយប់ ឬពីរយប់ ព្រោះថ្នាំថយប្រសិទ្ធភាព។ លាយឲ្យល្មមនឹងផ្ទៃដីដែលនឹងបាញ់។
+A (en): No. Use mixed spray right away; don't keep it overnight, because it loses effectiveness. Mix only as much as you will spray.
+
+#141 p.76
+Q: ពេលផ្ការីក គួរបាញ់ថ្នាំម៉ោងប៉ុន្មាន? / What time of day should I spray during bloom?
+A (km): ផ្កាចន្ទីលំអងច្រើនពីម៉ោង ៧ ព្រឹក ដល់ ១១ ថ្ងៃត្រង់ ដូច្នេះកុំបាញ់ម៉ោងនេះ។ បាញ់ពីម៉ោង ១ រសៀល ដល់យប់។ បើក្ដៅលើស ៣៤ អង្សា ពេលព្រឹក និងថ្ងៃត្រង់ ចាប់ផ្ដើមបាញ់ពីម៉ោង ៦ ល្ងាច ដល់ ៨-៩ យប់។ បាញ់យប់ចំណាយច្រើនជាង តែសម្លាប់សត្វល្អិតបានល្អ ហើយផ្កា និងក្ដិបជ្រុះតិច។ មុនផ្ការីកវិញ បាញ់ពេលព្រឹក ក្រោយសន្សើមស្ងួត ល្អជាង ព្រោះដើមធ្វើរស្មីសំយោគបានលឿន លើកលែងសត្វល្អិតស៊ីយប់ (ខ្ទុង ដង្កូវស៊ីផ្កា) ត្រូវបាញ់យប់។
+A (en): Pollination happens mostly 7-11 am, so don't spray then. Spray from 1 pm into the night. If mornings and midday are above 34°C, spray from 6 pm to 8-9 pm. Night spraying costs more but kills pests well and reduces flower and fruit drop. Before bloom, spray in the morning after dew dries, since the tree photosynthesises quickly, except for night-feeding pests (weevils, flower-eating caterpillars), which should be sprayed at night.
+
+#142 p.77
+Q: មានថ្នាំការពារកុំឲ្យសត្វល្អិតពងញាស់អត់? / Is there a product that stops pest eggs from hatching?
+A (km): មាន។ ដើម្បីកុំឲ្យសត្វល្អិតកើតកូនលឿន និងស៊ាំថ្នាំ គួរលាយថ្នាំពុល ជាមួយថ្នាំដែលរារាំងការបន្តពូជ ដូចជាធ្វើឲ្យពងមិនញាស់ ឬកូនមិនធំ ដូចជាថ្នាំដែលមានសារធាតុ Lufenuron និង Buprofezin។ ការទិញថ្នាំលាយស្រេចពីរោងចក្រ (២ សារធាតុ) ក៏ល្អ ព្រោះថោក និងមានប្រសិទ្ធភាព ពេលយើងមិនសូវចេះលាយ។
+A (en): Yes. To stop pests multiplying and building resistance, mix your pesticide with a product that blocks reproduction, preventing eggs from hatching or larvae from developing, such as Lufenuron or Buprofezin. Factory pre-mixed products with 2 active ingredients are also a good, cheap option if you're unsure how to mix.
+
+== J. កាប់ស្រឡះ និងកាត់មែក · Thinning & Pruning ==
+#35
+Q: តើគួរដឹងខ្លះថាដើមចន្ទីរបស់ខ្ញុំដុះក្រាស់ពេកនិងត្រូវការសម្តៃចេញ? / How do I know if my orchard is overcrowded and needs thinning?
+A (km): បើម្លប់ដើមចាប់ត្រួតគ្នារយៈពេលច្រើនជាង២ឆ្នាំ ហើយធ្វើឲ្យទិន្នផលថយចុះ (ជាធម្មតាកើតឡើងនៅអាយុ៦-៨ឆ្នាំពេលដាំក្រាស់) គួរពិចារណាកាត់ចេញដើមមួយចំនួន (សម្តៃ) មិនត្រឹមតែកាត់មែកទេ — កុំរងចាំយូរពេក។
+A (en): If canopies have been overlapping for more than 2 years and yield is declining (this typically happens around year 6–8 with dense planting), consider removing some entire trees (thinning) rather than just pruning — don't wait too long to decide.
+
+#36
+Q: តើគោលដៅនៃការកាត់មែកគឺអ្វី? / What's the goal of pruning?
+A (km): ជួយឲ្យពន្លឺ ថ្ងៃចូលដល់ខាងក្នុងម្លប់ (ផ្កាតាមខាងក្នុងស្រមោលច្រើនតែងឲ្យផលទាប ហើយស្រមោល/សំណើមកើនហានិភ័យជំងឺ)។ គួរកាត់មែកដែលអង្គុលដល់ដី និងកាត់ឲ្យមែកលូតលាស់ចេញក្រៅដើម្បីទទួលពន្លឺបានល្អ។
+A (en): Pruning lets light reach the canopy interior (shaded interior branches set fruit poorly and higher humidity there raises disease risk). Remove branches touching the ground and prune to encourage outward branch growth for better light exposure.
+
+#37
+Q: តើត្រូវកាត់ចោលមែកចេញពីគល់ជើងឬទេ? / Should shoots growing from the rootstock be removed?
+A (km): បាទ/ចាស ត្រូវកាត់ចោលជានិច្ច មិនមែនតែម្តងក្នុងមួយឆ្នាំទេ ព្រោះមែកទាំង នោះមកពីគល់ជើង មិនមែនពូជចង់បាន ហើយវាទាញយកជីជាតិដោយឥតបានផល។
+A (en): Yes, remove them continuously (not just once a year) — these shoots come from the rootstock, not the desired variety, and they drain nutrients without producing useful yield.
+
+#143 p.37
+Q: ដាំក្រាស់ ដើមពីរ មិនបានផលច្រើនជាងដើមមួយទេឬ? / Don't two trees always yield more than one?
+A (km): ដើមពីរបានផលច្រើនជាងមួយ លុះត្រាតែទាំងពីរបានពន្លឺ និងជីគ្រប់។ ពីដាំដល់ ៤-៥ ឆ្នាំ មួយឆ្នាំចេញ ៣ ត្រួយឡើង គុម្ពរីក ០.៨-២ ម៉ែត្រ/ខាង ឆ្នាំក្រោយប៉ះគ្នា បើចន្លោះគុម្ពតិចជាង ៣ ម៉ែត្រ។ បើស្ដាយមិនកាប់ ខែ១១-១២ ឆ្នាំក្រោយ គុម្ពប៉ះគ្នា ផលធ្លាក់ខ្លាំង ដោយម្លប់ ជំងឺ សត្វល្អិត និងពិបាកដាក់ជី បាញ់ថ្នាំ។ ដើម្បីបានពន្លឺ ៦-៨ ម៉ោង ការកាប់ដើមមួយក្នុងពីរ គឺដំណោះស្រាយត្រឹមត្រូវ ត្រូវហ៊ានសម្រេច។
+A (en): Only if both get enough light and nutrients. From planting to 4-5 years a tree adds 3+ flushes a year and the canopy grows 0.8-2 m per side, so canopies touch the next year if the gap is under 3 m. Farmers who don't thin find canopies touching by month 11-12 the next year and yield drops sharply from shade, disease, pests and difficult fertilizing and spraying. Removing one of two trees is the right solution to get 6-8 hours of light. Be bold.
+
+#144 p.37-39 [VERIFY NUMBERS]
+Q: ពេលណាត្រូវចាប់ផ្ដើមកាប់ស្រឡះ ហើយកាប់បែបណា? / When should thinning start, and how?
+A (km): ធ្វើក្រោយប្រមូលផល ពេលចន្លោះគុម្ពតិចជាង ៣ ម៉ែត្រ ជាធម្មតាអាយុ ៤-៥ ឆ្នាំ (ដាំ ៨x៨ មានដើមកណ្ដាល) ឬ ៥-៦ ឆ្នាំ (ដាំ ៧x៧)។ មានពីរវិធី៖ (១)កាត់បង្រួមមែកដើមដែលនឹងកាប់សិន ទុក ១-២ ឆ្នាំ ទើបកាប់ចោល (នៅបានផល ២-៤ គ.ក្រ/ដើម/ឆ្នាំ តែការងារ និងថ្លៃពីរដង ហើយមានហានិភ័យដង្កូវដួងត្រង់ស្នាមកាត់) ឬ (២)កាប់ចោលមួយក្នុងពីរតែម្ដង។ កុំកាត់បង្រួមគ្រប់ដើមជំនួសការកាប់ ព្រោះដើមលូតឡើងលើ គ្មានមែកទាប ងាយរលំពេលខ្យល់ខ្លាំង ពន្លឺតិច ផលទាប ហើយដឹងខ្លួនពេលយឺតពេក។
+A (en): After harvest, once the gap between canopies is under 3 m: usually age 4-5 (8x8 with centre tree) or 5-6 (7x7). Two ways: (1) cut back the tree to be removed, keep it 1-2 years (still 2-4 kg/tree/year), then remove it — double the work and cost, plus stem-borer risk at cuts; or (2) remove one of two at once. Don't just cut back every tree instead of removing some: trees grow upward with no low branches, fall in strong wind, get less light and yield less, and by then it's too late.
+
+#145 p.39-40 [VERIFY NUMBERS]
+Q: ដាំ ៨x៨ មានដើមកណ្ដាល ត្រូវកាប់ស្រឡះជាជំហានម៉េច? / What are the thinning steps for 8x8 with centre trees (and for 7x7)?
+A (km): ៨x៨ មានដើមកណ្ដាល ៤ ជំហាន៖ (១)អាយុ ៤-៥ ឆ្នាំ កាត់បង្រួមដើមកណ្ដាល (២)ពេលប៉ះគ្នា កាប់ដើមកណ្ដាលចោល នៅសល់ ៨x៨ ប្រហែល ១៤៤ ដើម/ហិកតា (៣)អាយុ ៧-៨ ឆ្នាំ កាត់បង្រួមដើមឆ្លាស់តាមអង្កត់ទ្រូង «កាត់មួយ រំលងមួយ» (៤)អាយុ ៩-១០ ឆ្នាំ កាប់ដើមដែលកាត់បង្រួមចោល នៅសល់ ១៦x១៦ មានដើមកណ្ដាល ប្រហែល ៦៤-៧០ ដើម/ហិកតា។ ដាំ ៧x៧៖ អាយុ ៥-៦ កាត់បង្រួមឆ្លាស់អង្កត់ទ្រូង អាយុ ៨-៩ កាប់ចោល (សល់ប្រហែល ៨៨ ដើម) អាយុ ១១-១២ កាប់ដើមកណ្ដាល (សល់ប្រហែល ៤៩ ដើម ១៤x១៤ ម៉ែត្រ)។
+A (en): 8x8 with centre trees, 4 steps: (1) age 4-5, cut back the centre trees; (2) when crowded, remove them, leaving 8x8 at ~144 trees/ha; (3) age 7-8, cut back alternate trees diagonally ("cut one, skip one"); (4) age 9-10, remove those, leaving 16x16 with centre trees, ~64-70 trees/ha. 7x7: age 5-6 cut back alternate trees diagonally; age 8-9 remove them (~88 trees); age 11-12 remove centre trees (~49 trees, 14x14 m).
+
+#146 p.36, 41
+Q: កាត់មែកចន្ទីធំ ប៉ុន្មានដងក្នុងមួយឆ្នាំ ហើយកាត់មែកណាខ្លះ? / How often should mature trees be pruned, and which branches?
+A (km): ដើមលើស ២ ឆ្នាំ កាត់យ៉ាងតិចមួយឆ្នាំម្ដង ក្រោយប្រមូលផល ឬដើមរដូវភ្លៀង។ កាត់មែកទាបធ្លាក់មកជិតដីប្រហែល ១ ម៉ែត្រ មែកលូតចំហៀងច្រើនពេក (ធ្វើឲ្យដើមមិនស្មើ) និងមែកតូចៗខ្សោយខាងក្នុង។ កាត់ជាប់គល់ ឬមែកមេ កុំទុកគល់ខ្លី ព្រោះវាដុះពន្លកវិញ។ រួចលាបស្នាមកាត់ និងបាញ់ថ្នាំការពារដង្កូវដួង។ ដើមធំ ១០ ឆ្នាំឡើង នៅតែត្រូវតម្រឹមមែក ១-២ ឆ្នាំម្ដង ព្រោះនៅចេញត្រួយ។
+A (en): Trees over 2 years: at least once a year, after harvest or at the start of the rains. Remove branches drooping to about 1 m from the ground, branches sprawling too far sideways (unbalanced), and small weak inner branches. Cut flush to the trunk or main branch; stubs resprout. Then paint cuts and spray against stem borer. Trees 10+ years still need trimming every 1-2 years because they keep flushing.
+
+== K. ប្រមូលផល ហាល និងលក់ · Harvest, Drying & Selling ==
+#57
+Q: តើដើមចន្ទីអឹម២៣ចាប់ផ្តើមប្រមូលផលនៅខែណា? / When does M23 cashew harvest season begin?
+A (km): ដោយសារអឹម២៣ចេញផ្កា២-៣ដង (បន្តគ្នា) រយៈពេលប្រមូលផលអាចលាត សន្ធឹងពីខែ១ដល់ខែ៥ ព្រោះផ្លែពីវ៉ែនផ្កាខុសៗគ្នាទុំមិនស្មើគ្នា។
+A (en): Because M23 flowers in 2–3 flushes, harvest can span from month 1 through month 5, since fruit from different flowering flushes ripens at different times.
+
+#59
+Q: តើកម្រិតសំណើមប៉ុន្មានដែលសមស្របសម្រាប់ស្តុកគ្រាប់ចន្ទី? / What moisture level is safe for storing cashew nuts?
+A (km): សំណើមក្នុងគ្រាប់គួរតែក្រោម១១% មុននឹងយកទៅស្តុក។
+A (en): Nut moisture content should be below 11% before storage.
+
+#60
+Q: តើគ្រាប់ដែលធ្លាក់ដីទុំហួសកំណត់ (ធ្លាក់លើសពី៥ថ្ងៃមិនប្រមូល) មានហានិភ័យអ្វី? / What's the risk of leaving fallen nuts uncollected too long?
+A (km): គ្រាប់ដែលនៅលើដីលើសពី៤-៥ថ្ងៃ ចាប់ផ្តើមបាត់បង់គុណភាព ជាពិសេសបើមានភ្លៀងធ្លាក់ ធ្វើឲ្យស្អុយលឿនជាង។
+A (en): Nuts left on the ground more than 4–5 days start losing quality, especially if it rains — they spoil faster.
+
+#147 p.78
+Q: គួរបេះគ្រាប់ចន្ទីពីដើម ឬរង់ចាំវាជ្រុះឯង? / Should I pick nuts from the tree or wait for them to fall?
+A (km): ត្រូវចាំផ្លែទុំជ្រុះមកដី ទើបមួលផ្ដាច់ផ្លែ (ប៉ោម) យកតែគ្រាប់។ កុំបេះគ្រាប់មិនទាន់ទុំ យកទៅលក់ស្រស់ ឬហាលទុក ព្រោះលក់បានថោក គុណភាពធ្លាក់ (ភាគរយសាច់ក្នុងគ្រាប់ចុះ)។ អឹម២៣ ប្រមូលផលពីចុងខែ១ ដល់ខែ៥ ចំណែកពូជចេញផ្កាតែម្ដងដូច M-10 ពីចុងខែ១ ដល់ខែ២ ឬដើមខែ៣។
+A (en): Wait until the fruit is ripe and falls, then twist off the apple and keep only the nut. Don't pick unripe nuts to sell fresh or dry, because quality (kernel ratio) drops and they sell cheap. M23 harvest runs from late month 1 to month 5; single-flowering varieties like M-10 from late month 1 to month 2 or early month 3.
+
+#148 p.1, 78-79
+Q: លក់គ្រាប់ចន្ទីស្រស់ ឬហាលស្ងួតសិន មួយណាចំណេញជាង? / Is it better to sell nuts fresh or dry them first?
+A (km): គ្រាប់ស្រស់លក់រាល់ថ្ងៃបានងាយ តែហានិភ័យខ្ពស់ពេលគ្មានអ្នកទិញ ឬត្រូវគេសង្កត់ថ្លៃ ព្រោះរោងចក្រខ្វះទីលានហាល ហើយគុណភាពស្រស់មិនច្បាស់ (អ្នកខ្លះទុកសាច់ជាប់ ចាក់ទឹក លាយគ្រាប់ខ្ចី ឬគ្រាប់ស្កក ដើម្បីបន្ថែមទម្ងន់) ដូច្នេះតម្លៃស្រស់នៅមាត់ចម្ការច្រើនទាប។ គ្រាប់ស្ងួតវិញ អ្នកលក់មានអំណាចតថ្លៃជាង បើមិនត្រូវថ្លៃ អាចទុករង់ចាំថ្លៃល្អ។ ហាលស្ងួតបាត់ទម្ងន់ ១០-១៥%។ ដើមរដូវ (ខែ១ ដល់ចុងខែ២) គ្រាប់ស្រស់ច្រើនបានថ្លៃ ព្រោះរោងចក្រខ្វះវត្ថុធាតុដើម តែចុងរដូវ ច្រើនត្រូវគេសង្កត់ថ្លៃ។
+A (en): Fresh nuts are easy to sell daily, but risky when there are no buyers or prices are pushed down, because factories lack drying space and fresh quality is unclear (some sellers leave apple attached, add water, or mix in unripe or empty nuts to add weight), so farm-gate fresh prices are often low. With dry nuts the seller has more bargaining power and can store and wait for a better price. Drying loses 10-15% of weight. Early season (month 1 to end of month 2) fresh nuts often fetch good prices because factories lack raw material; late-season fresh nuts are often beaten down.
+
+#149 p.79 [VERIFY NUMBERS]
+Q: ហាលគ្រាប់ចន្ទីឲ្យស្ងួត ទុកបានយូរ ត្រូវធ្វើម៉េច? / How should nuts be dried for long storage?
+A (km): (១)យកតែគ្រាប់ទុំជ្រុះ កាត់សាច់ចេញឲ្យអស់ (២)លាងក្នុងអាងទឹក ៣-៥ នាទី ឲ្យជ្រះទឹកសាច់ និងផ្សិតខ្មៅ ហើយបើអាច ស្រង់គ្រាប់អណ្ដែតចេញ (គ្រាប់ស្កក) ដើម្បីបង្កើនភាគរយសាច់ លក់បានថ្លៃ (៣)ហាលលើការ៉ូ ២-៣ ថ្ងៃ បើថ្ងៃក្ដៅល្អ លើតង់ ៤-៥ ថ្ងៃ (៤)កុំរាយក្រាស់ ស្រទាប់មួយល្អបំផុត ត្រឡប់យ៉ាងតិច ២ ដង/ថ្ងៃ ព្រឹក និងល្ងាច (៥)បើភ្លៀង ប្រមូលជាគំនរ គ្របប្លាស្ទិក។ សំណើមល្អសម្រាប់លក់ ក្រោម ១១%។
+A (en): (1) Use only ripe fallen nuts, apple fully removed; (2) wash in a water tank 3-5 minutes to remove apple juice and black mould, and skim off floating (empty) nuts if you can to raise kernel ratio and price; (3) dry on cement 2-3 days in good sun, or 4-5 days on tarps; (4) spread thin, one layer is best, and turn at least twice a day, morning and afternoon; (5) if it rains, pile and cover with plastic. Moisture for sale should be under 11%.
+
+#150 p.1, 79
+Q: ទុកគ្រាប់ចន្ទីស្ងួតក្នុងឃ្លាំងម៉េចកុំឲ្យខូច? / How should dried nuts be stored so they don't spoil?
+A (km): មុនច្រកបាវ ប្រមូលគ្រាប់ហាលរួចជាគំនរក្នុងឃ្លាំង ២-៣ ថ្ងៃ ឲ្យត្រជាក់សិន។ ច្រកចូលបាវនីឡុង ឬបាវក្រចៅ ថ្លឹង ដេរមាត់ ហើយកត់ចំនួនបាវ។ ដាក់បាវលើប៉ាឡែតឈើ ក្នុងឃ្លាំងខ្យល់ចេញចូលល្អ ពិនិត្យដំបូលមិនលិចទឹក ភ្លៀងមិនសាចចូល និងគ្មានចោរ។ គ្រាប់ហាលល្អ ទុកបាន ៤-៥ ខែ រក្សាគុណភាព។ បើទុកលើស ៣ ខែ ពិនិត្យរៀងរាល់ ២ ខែ បើមានផ្សិត លាង និងហាលម្ដងទៀត។
+A (en): Before bagging, pile the dried nuts in the warehouse for 2-3 days to cool. Bag in nylon or jute sacks, weigh, sew shut and record the number of sacks. Stack on wooden pallets in a well-ventilated warehouse; check that the roof doesn't leak, rain can't splash in, and there is no theft. Well-dried nuts keep quality for 4-5 months. If storing more than 3 months, check every 2 months; if mould appears, wash and re-dry.
+
+#151 p.2
+Q: តម្លៃគ្រាប់ចន្ទីស្ងួត ធ្លាប់បានប៉ុន្មានក្នុងមួយតោន? / What prices has dried raw cashew fetched per tonne?
+A (km): តាំងពីឆ្នាំ ១៩៩៦ គ្រាប់ចន្ទីតែងមានទីផ្សារ។ ឆ្នាំ ២០១៤-២០២០ គ្រាប់ស្ងួត (សាច់ ២៨% ឡើង) លក់បាន ១៤០០-២០០០ ដុល្លារ/តោន។ ពេលកូវីដ ២០២០ ធ្លាក់មក ១១០០ ដុល្លារ នៅខែ៥-៦ ហើយពីខែ៧ ឡើងវិញ ១៤០០-១៨០០ ដុល្លារ។ នេះជាតម្លៃចាស់ក្នុងសៀវភៅ មិនមែនតម្លៃថ្ងៃនេះទេ។ តម្លៃបច្ចុប្បន្ន សូមសួរឈ្មួញ ហាងទិញ ឬរោងចក្រក្នុងតំបន់។
+A (en): Raw cashew has always had a market since 1996. In 2014-2020 dry nuts (28%+ kernel) sold for $1,400-2,000/tonne. During COVID in 2020 the price fell to $1,100 in month 5-6, then recovered to $1,400-1,800 from month 7. These are historical prices from the book, not today's prices; for current prices ask local traders, buying points or factories.
+Instruction: Bot must never present these as current prices.
+
+== General (from v1) ==
+#4 p.1, 4 [VERIFY NUMBERS]
+Q: តើដើមចន្ទីអឹម២៣ឲ្យផលបានប៉ុន្មានឆ្នាំ ហើយដើមធំប៉ុណ្ណា? / How many years does an M23 cashew tree bear fruit, and how big does it grow?
+A (km): ដើមចន្ទីអាចឲ្យផលបាន២០-៣០ឆ្នាំ ឬលើសពីនេះ។ ដើមខ្ពស់ប្រហែល៧-១០ម៉ែត្រ ហើយនៅអាយុ១៥-២០ឆ្នាំ មែកអាចវែងលើសពី១០ម៉ែត្រ។
+A (en): Trees bear fruit for 20-30 years or more. They grow about 7-10 m tall, and by age 15-20 the branches can reach beyond 10 m.
+
+== DIAGNOSABLE CONDITIONS (the ONLY conditions you may diagnose a photo as) ==
+1. Acid dew / fog fungal damage (សន្សើមប្រៃ) — blackened flowers, panicles and small fruit after foggy, dewy mornings, mostly late month 12 to early month 2. See #120-123.
+2. Tea mosquito bug (មូសតែ) — young shoots wilt black then turn rust-brown; black spots on panicles, young fruit and nut shells. See #124-125.
+3. Caterpillars: leaf-rolling, flower-eating, fruit-boring (ដង្កូវ) — rolled leaves or flowers with larvae inside, chewed panicles, bored fruit. See #126.
+4. Thrips (ទ្រីប / ក្រាភ្លើង) — damaged young leaves, flowers and scarred fruit surface; insects too small to see in most photos. See #127-128.
+5. Mealybugs (ចៃស) — white waxy insects on panicles, shoots and fruit, often with red ants. See #129-130.
+6. Chafer beetles & weevils (គោម៉ និងខ្ទុង) — chewed young flush, flowers and small fruit. See #131.
+7. Stem borer (ដង្កូវដួង) — holes, sawdust or oozing at the trunk or base. See #132-133.
+8. Young fruit turning black and dropping (ក្ដិបខ្មៅ) — this has several possible causes (weather, dry soil, tree age, pests, wrong spraying). Do not name one cause from the photo alone; ask about tree age, soil, recent weather and what was sprayed. See #116-118.
+
+== FRUIT DEVELOPMENT (GENERAL RESEARCH — say clearly this is not from the book; where it overlaps with a book entry, the book entry wins) ==
+The nut forms and grows first; the cashew apple only expands significantly in the final ~2 weeks. At maturity the apple shifts from green to yellow/red/pink and the nut shell darkens to grey. Excess moisture during flowering/early fruit-set raises anthracnose/mildew risk. A nut/apple borer whose larvae bore into developing fruit causes nut drop and poor kernel quality — manage first by collecting and destroying fallen/infested nuts and by pheromone-trap monitoring; chemical control (Spinosad 45% SC or Novaluron 10% EC) is a higher-stakes fallback that needs the same verify-before-treatment caution as anything chemical. (Book timing for flowering to ripe nuts is in #66.)
+
+== RULES FOR EVERY ANSWER ==
+- You are a calm, practical Cambodian cashew-agronomy advisor speaking to an M-23 smallholder farmer.
+- Always write the main answer in Khmer. Never skip the Khmer. Prefer the Khmer wording of the matching entry.
+- Answer from the entries above. Farmers phrase questions in many ways; match the meaning, not the exact words. If no entry covers the question, say so honestly rather than inventing an answer, and suggest asking a local agronomist.
+- For chemical doses and timing, follow the [VERIFY NUMBERS] rule above.
+- For photo diagnosis: ONLY diagnose from the DIAGNOSABLE CONDITIONS list. If a photo does not clearly match one of them, say so honestly and recommend an in-person check by an agronomist rather than guessing.
+- Prices in the entries are historical figures from the book. Never present them as today's price; tell the farmer to ask local traders, buying points or factories.
+- If asked about Fruit Development beyond the book entries, say plainly that the information comes from general agronomy research.
+- Keep answers short and practical — written for a farmer reading on a phone, not an essay.`;
+
+  const CHAT_JSON_INSTRUCTION = `Reply with ONLY a JSON object, no other text: {"reply_km": "<answer in Khmer, a few short sentences>", "gloss_en": "<1-2 sentence English summary of the same answer>"}`;
+
+  const VISION_JSON_INSTRUCTION = `The farmer has attached a photo of their M-23 cashew plant asking what's wrong with it. Diagnose ONLY from the DIAGNOSABLE CONDITIONS list above.
+Reply with ONLY a JSON object, no other text, in this exact shape:
+{"matched": true|false,
+ "title_km": "<Khmer name of the matched condition, empty string if matched is false>",
+ "title_en": "<English name, e.g. 'Likely: Tea mosquito bug damage', empty string if matched is false>",
+ "confidence_km": "<short Khmer confidence/verify note>",
+ "confidence_en": "<short English confidence/verify note>",
+ "symptoms_km": "<Khmer description of what the photo shows and why it matches (or doesn't)>",
+ "symptoms_en": "<English version>",
+ "steps_km": ["<step 1 in Khmer>", "..."],
+ "steps_en": ["<step 1 in English>", "..."]}
+If nothing matches confidently, set matched to false, leave title fields empty, and use symptoms_km/symptoms_en + confidence_km/confidence_en to explain what you see and recommend an in-person agronomist check. steps_km/steps_en can be a short list of general next steps (e.g. isolate the plant, photograph again in better light, contact an agronomist) even when matched is false.`;
+
+  // ===================== MOCK EXAMPLE DATA (shown once, clearly labeled — not live) =====================
+
+  const STAGES = [
+    { key: 'planting',  en: 'Planting',          km: 'ការដាំដុះ',              icon: 'sprout',  window: 'Jun–Jul' },
+    { key: 'vegetative',en: 'Vegetative',         km: 'ដំណាក់កាលលូតលាស់',       icon: 'leaf',    window: 'Aug–Oct' },
+    { key: 'flowering', en: 'Flowering',          km: 'ការចេញផ្កា',            icon: 'flower',  window: 'Nov–Dec' },
+    { key: 'fruiting',  en: 'Fruit Development',  km: 'ការលូតលាស់ផ្លែ',        icon: 'fruit',   window: 'Jan–Feb' },
+    { key: 'harvest',   en: 'Harvesting',         km: 'ការប្រមូលផល',           icon: 'wheat',   window: 'Mar–Apr' },
+  ];
+  const ACTIVE_STAGE_INDEX = 2; // "Flowering" — demo state
+
+  const EXAMPLE_LOG = [
+    {
+      role: 'farmer',
+      type: 'image',
+      example: true,
+      caption_km: 'ត្រួយខ្ចីស្រពោនខ្មៅ ហើយប្រែពណ៌ច្រែះ ជួយមើលឱ្យផងបង។',
+      caption_en: '"My young shoots are wilting black and turning rust-brown — can you check?"',
+      time: 'Example'
+    },
+    {
+      role: 'ai',
+      type: 'diagnosis',
+      example: true,
+      matched: true,
+      title_km: 'មូសតែ (Tea mosquito bug)',
+      title_en: 'Likely: Tea mosquito bug damage',
+      confidence_km: 'ភាពប្រាកដប្រជា មធ្យម · សូមពិនិត្យត្រួយខ្ចីផ្ទាល់ និងផ្ទៀងផ្ទាត់ជាមួយអ្នកជំនាញមុនបាញ់ថ្នាំ',
+      confidence_en: 'Moderate match · check young shoots in person and confirm with an agronomist before spraying',
+      symptoms_km: 'ត្រួយខ្ចីស្រពោនខ្មៅ រួចប្រែជាពណ៌ច្រែះ ហើយឈប់លូត — ត្រូវគ្នានឹងស្នាមមូសតែជញ្ជក់ទឹក (សៀវភៅ ទំព័រ ៦៦-៦៧)។',
+      symptoms_en: 'Young shoots wilting black, then rust-brown and no longer growing — matches tea mosquito bug sap-feeding damage (book p.66-67).',
+      steps_km: [
+        'ពិនិត្យត្រួយខ្ចីញឹកៗ ព្រោះមូសតែតូច ពិបាកមើលឃើញ។',
+        'ពេលផ្ទុះ បាញ់ ៣ ដង៖ ថ្ងៃទី១, ថ្ងៃទី៣ ឬទី៥ ក្រោយលើកទី១, និងថ្ងៃទី៧ ក្រោយលើកទី២។',
+        'បើមានផ្កាហើយ ប្រើថ្នាំទម្រង់ SC ដូចជា Imidacloprid ឬ Thiamethoxam កុំប្រើថ្នាំក្ដៅ (EC)។',
+        'កាត់មែកឲ្យស្រឡះ ពន្លឺចូល ខ្យល់ចេញចូល ដើម្បីកាត់បន្ថយមូសតែ។'
+      ],
+      steps_en: [
+        'Check young flushes often — the bug is small and hard to see.',
+        'In an outbreak spray 3 times: day 1, day 3 or 5 after the first, and day 7 after the second.',
+        'If flowers are out, use SC products such as Imidacloprid or Thiamethoxam, not "hot" EC products.',
+        'Prune for light and airflow to reduce the bug.'
+      ],
+      time: 'Example'
+    }
+  ];
+
+  // ===================== ICONS (hand-built, Lucide-style: 24x24, stroke 2) =====================
+
+  function stageIcon(name) {
+    const common = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+    switch (name) {
+      case 'sprout':
+        return `<svg width="16" height="16" viewBox="0 0 24 24" ${common}><path d="M12 20V11"/><path d="M12 11c0-4 3-6 7-6 0 4-2 7-7 7"/><path d="M12 13C12 9 9 7 5 7c0 4 2 6.5 7 6"/><path d="M8 20h8"/></svg>`;
+      case 'leaf':
+        return `<svg width="16" height="16" viewBox="0 0 24 24" ${common}><path d="M5 15c0-7 5-11 13-11 0 9-4 15-13 13-1.6-.3-2-1-2-2z"/><path d="M6 18c3-3 6-6 12-13"/></svg>`;
+      case 'flower':
+        return `<svg width="16" height="16" viewBox="0 0 24 24" ${common}><circle cx="12" cy="12" r="2.2"/><ellipse cx="12" cy="6.3" rx="2.3" ry="3.3"/><ellipse cx="12" cy="17.7" rx="2.3" ry="3.3"/><ellipse cx="6.3" cy="12" rx="3.3" ry="2.3"/><ellipse cx="17.7" cy="12" rx="3.3" ry="2.3"/></svg>`;
+      case 'fruit':
+        return `<svg width="16" height="16" viewBox="0 0 24 24" ${common}><circle cx="12" cy="14" r="7"/><path d="M12 7c0-2 1-4 3-4.5"/><path d="M9 6.5c1-1 2.5-1 3 0"/></svg>`;
+      case 'wheat':
+        return `<svg width="16" height="16" viewBox="0 0 24 24" ${common}><path d="M12 3v18"/><path d="M12 6l-3.5 2M12 6l3.5 2"/><path d="M12 10l-3.5 2M12 10l3.5 2"/><path d="M12 14l-3.5 2M12 14l3.5 2"/></svg>`;
+      default: return '';
+    }
+  }
+
+  // ===================== RENDER: STAGE STEPPER =====================
+
+  const stepperTrack = document.getElementById('stepperTrack');
+  STAGES.forEach((s, i) => {
+    const isActive = i === ACTIVE_STAGE_INDEX;
+    const isDone = i < ACTIVE_STAGE_INDEX;
+    const node = document.createElement('div');
+    node.className = 'flex items-center shrink-0';
+    node.innerHTML = `
+      <div class="flex flex-col items-center w-[84px] shrink-0">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center border-2
+          ${isActive ? 'bg-brand border-brandBright text-brandBright stage-active-ring' : isDone ? 'bg-brand/20 border-brand text-brandBright' : 'bg-surface border-line text-inkMuted'}">
+          ${stageIcon(s.icon)}
+        </div>
+        <p class="mt-1.5 text-[11px] font-semibold text-center leading-tight ${isActive ? 'text-ink' : isDone ? 'text-inkMuted' : 'text-inkMuted/70'}">${s.en}</p>
+        <p class="khmer text-[10px] text-center leading-tight ${isActive ? 'text-brandBright' : 'text-inkMuted/60'}">${s.km}</p>
+        <p class="text-[9px] text-inkMuted/50 mt-0.5">${s.window}</p>
+      </div>
+      ${i < STAGES.length - 1 ? `<div class="h-[2px] w-6 -mt-6 shrink-0 ${isDone ? 'bg-brand' : 'bg-line'}"></div>` : ''}
+    `;
+    stepperTrack.appendChild(node);
+  });
+
+  // ===================== CHAT RENDERING =====================
+
+  const chatWindow = document.getElementById('chatWindow');
+
+  function exampleBadge(entry) {
+    return entry.example
+      ? `<p class="text-[9px] font-bold uppercase tracking-wide text-inkMuted/70 mb-1">ឧទាហរណ៍ · Sample answer, not live</p>`
+      : '';
+  }
+
+  function renderFarmerText(text, time) {
+    const wrap = document.createElement('div');
+    wrap.className = 'flex justify-end fade-in';
+    wrap.innerHTML = `
+      <div class="max-w-[82%]">
+        <div class="bg-brand/90 rounded-2xl rounded-tr-sm px-3.5 py-2.5">
+          <p class="khmer text-[13px] text-ink leading-snug">${escapeHtml(text)}</p>
+        </div>
+        <p class="text-[10px] text-inkMuted text-right mt-1 pr-1">${time}</p>
+      </div>`;
+    chatWindow.appendChild(wrap);
+    return wrap;
+  }
+
+  function renderFarmerImage(entry) {
+    const wrap = document.createElement('div');
+    wrap.className = 'flex justify-end fade-in';
+    const imgHtml = entry.imgUrl
+      ? `<img src="${entry.imgUrl}" class="h-40 w-full object-cover" alt="uploaded photo" />`
+      : `<div class="h-32 w-full bg-app/30 flex items-center justify-center relative">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#fafaf9" stroke-opacity="0.85" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 16c0-8 5-12 13-12 0 9-4 14-13 13-1.8-.2-2-1-2-1.5z"/>
+            <path d="M6.5 18c2.5-2.5 5-5 10-11"/>
+            <circle cx="10" cy="9.3" r="1" fill="#7f1d1d" stroke="none"/>
+            <circle cx="13.4" cy="8" r="1" fill="#7f1d1d" stroke="none"/>
+            <circle cx="9" cy="12.4" r="0.9" fill="#7f1d1d" stroke="none"/>
+          </svg>
+        </div>`;
+    wrap.innerHTML = `
+      <div class="max-w-[82%]">
+        ${exampleBadge(entry)}
+        <div class="bg-brand/90 rounded-2xl rounded-tr-sm overflow-hidden">
+          ${imgHtml}
+          ${entry.caption_km ? `<p class="khmer text-[13px] px-3 pt-2 text-ink leading-snug">${entry.caption_km}</p>` : ''}
+          ${entry.caption_en ? `<p class="text-[11px] px-3 pb-2.5 pt-0.5 text-ink/75 italic leading-snug">${entry.caption_en}</p>` : (entry.caption_km ? '<div class="pb-2.5"></div>' : '')}
+        </div>
+        <p class="text-[10px] text-inkMuted text-right mt-1 pr-1">${entry.time}</p>
+      </div>`;
+    chatWindow.appendChild(wrap);
+    return wrap;
+  }
+
+  function renderAiChatBubble(replyKm, glossEn, time) {
+    const wrap = document.createElement('div');
+    wrap.className = 'flex justify-start fade-in';
+    wrap.innerHTML = `
+      <div class="max-w-[86%]">
+        <div class="bg-surface border border-line rounded-2xl rounded-tl-sm px-3.5 py-3">
+          <p class="khmer text-[13.5px] text-ink leading-relaxed">${escapeHtml(replyKm)}</p>
+          ${glossEn ? `<p class="text-[11px] text-inkMuted mt-2 pt-2 border-t border-line/70 leading-snug">${escapeHtml(glossEn)}</p>` : ''}
+        </div>
+        <p class="text-[10px] text-inkMuted mt-1 pl-1">${time}</p>
+      </div>`;
+    chatWindow.appendChild(wrap);
+    return wrap;
+  }
+
+  function renderDiagnosisCard(entry) {
+    const wrap = document.createElement('div');
+    wrap.className = 'flex justify-start fade-in';
+    if (entry.matched) {
+      wrap.innerHTML = `
+        <div class="max-w-[86%]">
+          ${exampleBadge(entry)}
+          <div class="bg-surface border border-line rounded-2xl rounded-tl-sm px-3.5 py-3">
+            <div class="flex items-center gap-1.5 mb-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <p class="khmer text-[13.5px] font-bold text-ink">${entry.title_km}</p>
+            </div>
+            <p class="text-[12px] text-inkMuted -mt-1.5 mb-2">${entry.title_en}</p>
+            <p class="text-[10.5px] text-warn bg-warn/10 border border-warn/25 rounded-lg px-2 py-1.5 mb-2.5 leading-snug">${entry.confidence_km} · ${entry.confidence_en}</p>
+            <p class="khmer text-[12.5px] text-ink/90 mb-1 leading-relaxed">${entry.symptoms_km}</p>
+            <p class="text-[11.5px] text-inkMuted mb-3 leading-relaxed">${entry.symptoms_en}</p>
+            <p class="text-[10px] font-bold uppercase tracking-wide text-brandBright mb-1.5">Recommended steps · <span class="khmer normal-case">ជំហានណែនាំ</span></p>
+            <ul class="space-y-2">
+              ${entry.steps_km.map((s, i) => `
+                <li class="flex gap-2">
+                  <span class="shrink-0 w-4 h-4 mt-0.5 rounded-full bg-brand/30 text-brandBright text-[9px] font-bold flex items-center justify-center">${i+1}</span>
+                  <div>
+                    <p class="khmer text-[12px] text-ink/90 leading-snug">${s}</p>
+                    <p class="text-[11px] text-inkMuted leading-snug">${entry.steps_en[i] || ''}</p>
+                  </div>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          <p class="text-[10px] text-inkMuted mt-1 pl-1">${entry.time}</p>
+        </div>`;
+    } else {
+      wrap.innerHTML = `
+        <div class="max-w-[86%]">
+          ${exampleBadge(entry)}
+          <div class="bg-surface border border-line rounded-2xl rounded-tl-sm px-3.5 py-3">
+            <div class="flex items-center gap-1.5 mb-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a8a29e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <p class="khmer text-[13.5px] font-bold text-ink">មិនច្បាស់លាស់ — មិនត្រូវនឹងបញ្ជីរបស់យើង</p>
+            </div>
+            <p class="text-[12px] text-inkMuted -mt-1.5 mb-2">No confident match against known conditions</p>
+            <p class="khmer text-[12.5px] text-ink/90 mb-1 leading-relaxed">${entry.symptoms_km}</p>
+            <p class="text-[11.5px] text-inkMuted mb-3 leading-relaxed">${entry.symptoms_en}</p>
+            ${entry.steps_km && entry.steps_km.length ? `
+            <p class="text-[10px] font-bold uppercase tracking-wide text-brandBright mb-1.5">Suggested next steps · <span class="khmer normal-case">ជំហានបន្ទាប់</span></p>
+            <ul class="space-y-2">
+              ${entry.steps_km.map((s, i) => `
+                <li class="flex gap-2">
+                  <span class="shrink-0 w-4 h-4 mt-0.5 rounded-full bg-brand/30 text-brandBright text-[9px] font-bold flex items-center justify-center">${i+1}</span>
+                  <div>
+                    <p class="khmer text-[12px] text-ink/90 leading-snug">${s}</p>
+                    <p class="text-[11px] text-inkMuted leading-snug">${(entry.steps_en && entry.steps_en[i]) || ''}</p>
+                  </div>
+                </li>
+              `).join('')}
+            </ul>` : ''}
+          </div>
+          <p class="text-[10px] text-inkMuted mt-1 pl-1">${entry.time}</p>
+        </div>`;
+    }
+    chatWindow.appendChild(wrap);
+    return wrap;
+  }
+
+  function addThinkingBubble() {
+    const wrap = document.createElement('div');
+    wrap.className = 'flex justify-start fade-in';
+    wrap.innerHTML = `
+      <div class="bg-surface border border-line rounded-2xl rounded-tl-sm px-3.5 py-3 flex items-center gap-1">
+        <span class="think-dot w-1.5 h-1.5 rounded-full bg-inkMuted"></span>
+        <span class="think-dot w-1.5 h-1.5 rounded-full bg-inkMuted"></span>
+        <span class="think-dot w-1.5 h-1.5 rounded-full bg-inkMuted"></span>
+      </div>`;
+    chatWindow.appendChild(wrap);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    return wrap;
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function nowLabel() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function scrollToBottom() { chatWindow.scrollTop = chatWindow.scrollHeight; }
+
+  // render the example log once, up front
+  EXAMPLE_LOG.forEach(entry => {
+    if (entry.role === 'farmer') renderFarmerImage(entry);
+    else renderDiagnosisCard(entry);
+  });
+
+  // ===================== LIVE AI: sample capability wiring =====================
+
+  let sampleFn = null;
+  let imagesSupported = false;
+  let busy = false;
+
+  const statusPill = document.getElementById('statusPill');
+  const unavailableBanner = document.getElementById('unavailableBanner');
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const cameraBtn = document.getElementById('cameraBtn');
+  const photoInput = document.getElementById('photoInput');
+  const toast = document.getElementById('toast');
+
+  function setStatus(state) {
+    // state: 'checking' | 'live' | 'unavailable'
+    if (state === 'live') {
+      statusPill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-brandBright"></span> Live · Text${imagesSupported ? ' · Vision' : ''} · Voice mock`;
+      statusPill.className = 'flex items-center gap-1 text-[11px] text-brandBright font-medium';
+      unavailableBanner.classList.add('hidden');
+      chatInput.disabled = false;
+      sendBtn.disabled = false;
+      cameraBtn.disabled = !imagesSupported;
+      cameraBtn.title = imagesSupported ? 'Attach photo' : 'Photo diagnosis unavailable in this view';
+    } else if (state === 'unavailable') {
+      statusPill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-warn"></span> AI unavailable here`;
+      statusPill.className = 'flex items-center gap-1 text-[11px] text-warn font-medium';
+      unavailableBanner.classList.remove('hidden');
+      chatInput.disabled = true;
+      sendBtn.disabled = true;
+      cameraBtn.disabled = true;
+    } else {
+      statusPill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-inkMuted"></span> checking…`;
+      statusPill.className = 'flex items-center gap-1 text-[11px] text-inkMuted font-medium';
+      unavailableBanner.classList.add('hidden');
+      chatInput.disabled = true;
+      sendBtn.disabled = true;
+      cameraBtn.disabled = true;
+    }
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.remove('hidden');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.add('hidden'), 4000);
+  }
+
+  async function initSample() {
+    setStatus('checking');
+    try {
+      if (!window.claude || typeof window.claude.use !== 'function') { setStatus('unavailable'); return; }
+      const s = await window.claude.use('sample');
+      if (!s) { setStatus('unavailable'); return; }
+      sampleFn = s;
+      try {
+        const limits = await s.limits();
+        imagesSupported = !!(limits && limits.images);
+      } catch (e) { imagesSupported = false; }
+      setStatus('live');
+    } catch (e) {
+      setStatus('unavailable');
+    }
+  }
+
+  document.getElementById('retryBtn').addEventListener('click', initSample);
+  initSample();
+
+  // ---- chat (text Q&A) ----
+
+  let chatTurns = [{ role: 'user', content: KNOWLEDGE_BASE + '\n\n' + CHAT_JSON_INSTRUCTION }];
+
+  // The knowledge base alone is ~160 KB of the 256 KiB sample limit, so a long
+  // chat drops its oldest question/answer pair — never the knowledge base turn.
+  const MAX_PROMPT_BYTES = 250000;
+  const utf8 = new TextEncoder();
+  function trimChatTurns() {
+    const size = () => chatTurns.reduce((n, t) => n + utf8.encode(t.content).length, 0);
+    while (chatTurns.length > 3 && size() > MAX_PROMPT_BYTES) chatTurns.splice(1, 2);
+  }
+
+  function errorCopy(code) {
+    switch (code) {
+      case 'not_granted': return null; // handled by switching to unavailable state
+      case 'rate_limited': return 'សូមរង់ចាំបន្តិច ហើយសាកល្បងម្តងទៀត។ · Too many requests right now — wait a moment and try again.';
+      case 'refused': return 'AI មិនអាចឆ្លើយសំណួរនេះបានទេ។ សូមសាកសួរម្តងទៀតតាមរបៀបផ្សេង។ · Claude declined this one — try rephrasing.';
+      case 'empty_completion': return 'មិនទទួលបានចម្លើយទេ សូមសាកល្បងម្តងទៀត។ · No answer came back — try again or ask something shorter.';
+      case 'prompt_too_large': return 'សំណួរវែងពេក សូមសរសេរខ្លីជាងនេះ។ · That was too long — try a shorter question.';
+      default: return 'មានបញ្ហាបច្ចេកទេស សូមសាកល្បងម្តងទៀត។ · Something went wrong — try again.';
+    }
+  }
+
+  async function sendText() {
+    if (busy || !sampleFn) return;
+    const text = chatInput.value.trim();
+    if (!text) return;
+    busy = true;
+    chatInput.value = '';
+    sendBtn.disabled = true;
+    chatInput.disabled = true;
+
+    renderFarmerText(text, nowLabel());
+    chatTurns.push({ role: 'user', content: text });
+    trimChatTurns();
+    scrollToBottom();
+    const thinking = addThinkingBubble();
+
+    try {
+      const data = await sampleFn.json(chatTurns, { modelTier: 'default', cache: false });
+      thinking.remove();
+      const replyKm = (data && data.reply_km) || '';
+      const glossEn = (data && data.gloss_en) || '';
+      renderAiChatBubble(replyKm || '...', glossEn, nowLabel());
+      chatTurns.push({ role: 'assistant', content: `KM: ${replyKm}\nEN: ${glossEn}` });
+    } catch (e) {
+      thinking.remove();
+      if (e && e.code === 'not_granted') {
+        setStatus('unavailable');
+      } else {
+        showToast(errorCopy(e && e.code));
+      }
+    } finally {
+      scrollToBottom();
+      busy = false;
+      if (sampleFn) { chatInput.disabled = false; sendBtn.disabled = false; chatInput.focus(); }
+    }
+  }
+
+  sendBtn.addEventListener('click', sendText);
+  chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendText(); });
+
+  // ---- vision (photo diagnosis) ----
+
+  cameraBtn.addEventListener('click', () => { if (!busy && imagesSupported) photoInput.click(); });
+
+  photoInput.addEventListener('change', async () => {
+    const file = photoInput.files && photoInput.files[0];
+    photoInput.value = '';
+    if (!file || busy || !sampleFn) return;
+    busy = true;
+    chatInput.disabled = true;
+    sendBtn.disabled = true;
+    cameraBtn.disabled = true;
+
+    const imgUrl = URL.createObjectURL(file);
+    renderFarmerImage({ imgUrl, caption_km: '', caption_en: '', time: nowLabel() });
+    scrollToBottom();
+    const thinking = addThinkingBubble();
+
+    try {
+      const data = await sampleFn.json(KNOWLEDGE_BASE + '\n\n' + VISION_JSON_INSTRUCTION, { images: file, cache: false });
+      thinking.remove();
+      renderDiagnosisCard({
+        matched: !!(data && data.matched),
+        title_km: data && data.title_km,
+        title_en: data && data.title_en,
+        confidence_km: data && data.confidence_km,
+        confidence_en: data && data.confidence_en,
+        symptoms_km: (data && data.symptoms_km) || '',
+        symptoms_en: (data && data.symptoms_en) || '',
+        steps_km: (data && data.steps_km) || [],
+        steps_en: (data && data.steps_en) || [],
+        time: nowLabel()
+      });
+    } catch (e) {
+      thinking.remove();
+      if (e && e.code === 'not_granted') {
+        setStatus('unavailable');
+      } else if (e && e.code === 'image_rejected') {
+        showToast('រូបភាពនេះមិនអាចប្រើបានទេ សូមសាកល្បងរូបផ្សេង។ · That photo couldn\'t be used — try a different one.');
+      } else {
+        showToast(errorCopy(e && e.code));
+      }
+    } finally {
+      scrollToBottom();
+      busy = false;
+      if (sampleFn) { chatInput.disabled = false; sendBtn.disabled = false; cameraBtn.disabled = !imagesSupported; }
+    }
+  });
+
+  // ===================== LANGUAGE TOGGLE (visual state only — UI chrome, not AI output) =====================
+
+  let showingEnglish = true;
+  document.getElementById('langToggle').addEventListener('click', () => {
+    showingEnglish = !showingEnglish;
+    const km = document.getElementById('langPillKm');
+    const en = document.getElementById('langPillEn');
+    [km, en].forEach(el => { el.classList.remove('bg-brandBright', 'text-app'); el.classList.add('text-inkMuted'); });
+    const active = showingEnglish ? en : km;
+    active.classList.remove('text-inkMuted');
+    active.classList.add('bg-brandBright', 'text-app');
+  });
+</script>
