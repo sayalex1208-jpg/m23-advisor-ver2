@@ -7,10 +7,13 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "kb": "python3 scripts/build_kb.py",
+    "bot:dev": "python3 scripts/bot_dev_polling.py",
+    "bot:webhook": "python3 scripts/setup_telegram_webhook.py",
     "typecheck": "tsc"
   },
   "dependencies": {
     "@google/genai": "^2.32.0",
+    "@supabase/supabase-js": "^2.118.0",
     "msedge-tts": "^2.1.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

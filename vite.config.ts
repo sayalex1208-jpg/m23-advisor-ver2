@@ -13,7 +13,14 @@ function devApi(): Plugin {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const route = req.url?.split("?")[0];
-        if (route !== "/api/advisor" && route !== "/api/feedback" && route !== "/api/register" && route !== "/api/tts") return next();
+        if (
+          route !== "/api/advisor" &&
+          route !== "/api/feedback" &&
+          route !== "/api/register" &&
+          route !== "/api/tts" &&
+          route !== "/api/telegram"
+        )
+          return next();
         const body = await readBody(req);
         const request = new Request(`http://localhost${req.url}`, {
           method: req.method,

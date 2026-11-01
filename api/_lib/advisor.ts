@@ -240,7 +240,14 @@ const DiagnoseRequest = z.object({
   note: z.string().max(MAX_TURN_CHARS).optional(),
 });
 
-const AdvisorRequest = z.discriminatedUnion("mode", [ChatRequest, DiagnoseRequest]);
+const AudioRequest = z.object({
+  mode: z.literal("audio"),
+  audioBase64: z.string().min(1).max(15_000_000),
+  mediaType: z.string().default("audio/ogg"),
+  farm: FarmContext.optional(),
+});
+
+const AdvisorRequest = z.discriminatedUnion("mode", [ChatRequest, DiagnoseRequest, AudioRequest]);
 
 export async function handleAdvisor(body: unknown): Promise<ChatReply | Diagnosis> {
   const parsed = AdvisorRequest.safeParse(body);
@@ -248,6 +255,30 @@ export async function handleAdvisor(body: unknown): Promise<ChatReply | Diagnosi
     throw new AdvisorError("bad_request", parsed.error.issues[0]?.message ?? "Invalid request.", 400);
   }
   const req = parsed.data;
+
+  if (req.mode === "audio") {
+    const farmNote = req.farm && describeFarm(req.farm);
+    const instruction =
+      "The farmer sent this voice message in Khmer asking a question about cashew farming. " +
+      "Listen carefully to their speech, identify what they are asking in Khmer, and provide a clear, practical answer in Khmer " +
+      "strictly following the M-23 Cashew Knowledge Base." +
+      (farmNote ? `\n\n${farmNote}` : "");
+
+    return ask(ChatReply, ChatReplyJsonSchema, [
+      {
+        role: "user",
+        parts: [
+          {
+            inlineData: {
+              mimeType: req.mediaType,
+              data: req.audioBase64,
+            },
+          },
+          { text: instruction },
+        ],
+      },
+    ]);
+  }
 
   if (req.mode === "chat") {
     // Keep the newest turns, and start on a user turn as the API requires.
