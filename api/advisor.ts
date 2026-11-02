@@ -13,14 +13,18 @@ export function GET() {
 export async function POST(request: Request) {
   try {
     const clientId = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
-    checkRateLimit(clientId);
-
+    
     let body: unknown;
     try {
       body = await request.json();
     } catch {
       throw new AdvisorError("bad_request", "Body must be JSON.", 400);
     }
+    
+    // Check if this is a photo request for separate rate limiting
+    const isPhoto = typeof body === "object" && body !== null && "mode" in body && body.mode === "diagnose";
+    checkRateLimit(clientId, isPhoto);
+    
     return Response.json(await handleAdvisor(body));
   } catch (error) {
     if (error instanceof AdvisorError) {

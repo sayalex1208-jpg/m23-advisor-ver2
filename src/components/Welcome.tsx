@@ -13,6 +13,7 @@ const FEATURES = [
 export function Welcome({ onFinish }: { onFinish: (account: Account) => void }) {
   const [step, setStep] = useState<"intro" | "register" | "thanks">("intro");
   const [registered, setRegistered] = useState<Extract<Account, { status: "registered" }> | null>(null);
+  const [linkingCode, setLinkingCode] = useState<string | null>(null);
 
   return (
     <div className="mx-auto flex h-full max-w-lg flex-col overflow-y-auto bg-bg">
@@ -51,6 +52,11 @@ export function Welcome({ onFinish }: { onFinish: (account: Account) => void }) 
             </ul>
 
             <div className="mt-auto flex flex-col gap-3 pt-8">
+              <div className="rounded-xl bg-brand-soft p-3 mb-2">
+                <p className="km text-[14px] font-medium text-brand">
+                  ចុះឈ្មោះឥឡូវ ទទួលបានគំរោងប្រើថ្នាំពិសេស · Register now, get custom spray calendar
+                </p>
+              </div>
               <button
                 onClick={() => setStep("register")}
                 className="km h-13 rounded-xl bg-brand py-3.5 text-[17px] font-semibold text-brand-ink"
@@ -77,8 +83,9 @@ export function Welcome({ onFinish }: { onFinish: (account: Account) => void }) 
               <span className="km">ចុះឈ្មោះ ដើម្បីទទួលដំបូន្មាន និងសេវាពីក្រុមការងារយើង។ </span>Register to get advice and services from our team.
             </p>
             <RegisterForm
-              onDone={(account) => {
+              onDone={(account, code) => {
                 setRegistered(account);
+                setLinkingCode(code);
                 setStep("thanks");
               }}
               onCancel={() => onFinish({ status: "guest" })}
@@ -92,6 +99,22 @@ export function Welcome({ onFinish }: { onFinish: (account: Account) => void }) 
             <h1 className="km text-[24px] font-semibold">អរគុណ {registered.name}!</h1>
             <p className="km mt-2 text-[15px]">អ្នកបានចុះឈ្មោះរួចហើយ។ ក្រុមការងារយើងអាចទាក់ទងអ្នកតាមលេខ {registered.phone}។</p>
             <p className="mt-1 text-[13px] text-muted">You're registered. Our team may contact you on {registered.phone}.</p>
+
+            {linkingCode && (
+              <div className="mt-5 rounded-2xl border border-line bg-surface p-4">
+                <p className="km text-[14px] font-medium">🔗 ភ្ជាក់ជាមួយ Telegram</p>
+                <p className="text-[12px] text-muted">
+                  <span className="km">
+                    បើក Telegram ហើយវាយ <b>/link</b> បន្ទាប់មកសូមដាក់លេខនេះ៖
+                  </span>{" "}
+                  Open Telegram, type <b>/link</b>, then enter this number:
+                </p>
+                <p className="km mt-3 rounded-xl bg-brand-soft py-3 text-center text-[30px] font-bold tracking-[0.25em] text-brand tabular-nums">
+                  {linkingCode}
+                </p>
+              </div>
+            )}
+
             <button
               onClick={() => onFinish(registered)}
               className="km mt-auto h-13 rounded-xl bg-brand py-3.5 text-[17px] font-semibold text-brand-ink"

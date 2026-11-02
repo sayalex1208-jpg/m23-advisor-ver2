@@ -10,12 +10,13 @@ import {
   type Diagnosis,
   type Turn,
 } from "../lib/api";
-import { shrinkPhoto } from "../lib/image";
+import { shrinkPhoto, ImageError } from "../lib/image";
 import { treeAge, type Farm } from "../lib/farm";
 import { ENTRY_BY_ID, toKhmerDigits } from "../lib/kb";
 import { findBookAnswers } from "../lib/match";
 import { KHMER_MONTHS, currentMonth, seasonFor } from "../lib/season";
 import { LISTEN_ERRORS, canListen, speak, stopSpeaking, useDictation, useSpeech } from "../lib/voice";
+import { useOnline } from "../lib/pwa";
 import { Feedback, ListenButton, Sources, Thinking, type Rating } from "./AnswerParts";
 import { BookAnswer, NOT_FOUND_KM } from "./BookAnswer";
 import { DiagnosisCard } from "./DiagnosisCard";
@@ -96,6 +97,7 @@ export function AskScreen({
   const [busy, setBusy] = useState(false);
   // null while checking; false until an API key is set on the server.
   const [ai, setAi] = useState<boolean | null>(null);
+  const online = useOnline();
   const scrollRef = useRef<HTMLDivElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -198,7 +200,17 @@ export function AskScreen({
       const result = await diagnosePhoto(photo.base64, photo.mediaType);
       setMessages((m) => [...m, { kind: "diagnosis", result }]);
     } catch (e) {
-      setMessages((m) => [...m, { kind: "error", code: e instanceof ApiError ? e.code : "bad_request" }]);
+      if (e instanceof ImageError) {
+        // Show user-friendly error for image issues
+        const kmMsg = e.code === "too_large" 
+          ? `រូបភាពធំពេក សូមថតម្ដងទៀតក្នុងគុណភាពទាប · Photo too large, retake in lower quality`
+          : `រូបភាពមិនត្រឹមត្រូវ · Invalid image`;
+        setMessages((m) => [...m, { kind: "error", code: "bad_request" }]);
+        // Show the specific message
+        alert(kmMsg);
+      } else {
+        setMessages((m) => [...m, { kind: "error", code: e instanceof ApiError ? e.code : "bad_request" }]);
+      }
     } finally {
       setBusy(false);
     }
@@ -250,9 +262,9 @@ export function AskScreen({
             type="button"
             onClick={() => photoRef.current?.click()}
             disabled={busy || !ai}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-line text-brand disabled:opacity-40"
-            aria-label={ai ? "ថតរូបដើមចន្ទី · Take a photo of your tree" : "ការពិនិត្យរូបភាព ឆាប់ៗនេះ · Photo checks coming soon"}
-            title={ai ? undefined : "Photo checks coming soon"}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-line text-brand disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label={ai ? "ថតរូបដើមចន្ទី · Take a photo of your tree" : "ត្រូវការអ៊ីនធឺណិត · Need internet"}
+            title={ai ? undefined : "Photo diagnosis requires internet connection · ត្រូវការអ៊ីនធឺណិតសម្រាប់ពិនិត្យរូបភាព"}
           >
             <CameraIcon />
           </button>
@@ -305,6 +317,11 @@ export function AskScreen({
             <span className="km">{LISTEN_ERRORS[dictation.error].km}</span> {LISTEN_ERRORS[dictation.error].en}
           </p>
         )}
+        {!online && (
+          <p className="km mt-1.5 text-center text-[12px] text-warn">
+            គ្មានអ៊ីនធឺណិត — មគ្គុទ្ទេសក៍អាចឆ្លើយពីសៀវភៅ ប៉ុន្តែមិនអាចពិនិត្យរូបភាព · Offline — answers from book only, no photo checks
+          </p>
+        )}
       </form>
     </div>
   );
@@ -322,10 +339,10 @@ function Welcome({ onPick, ai }: { onPick: (q: string) => void; ai: boolean | nu
           <h2 className="km text-[18px] font-semibold">សួរអ្វីក៏បាន អំពីចន្ទី M23</h2>
         </div>
         <p className="km mt-1 text-[15px]">
-          ចម្លើយផ្អែកលើសៀវភៅបច្ចេកទេសដាំចន្ទី។ ថតរូបស្លឹក ផ្កា ឬផ្លែ ដើម្បីរកបញ្ហា។
+          ចម្លើយផ្អែកលើសៀវភៅបច្ចេកទេសដាំចន្ទី។ ថតរូបស្លឹក ផ្កា ឬផ្លែ ដើម្បីរកបញ្ហា ៨ប្រភេទដែលមានក្នុងសៀវភៅ។
         </p>
         <p className="mt-1 text-[13px] text-muted">
-          Answers come from a Khmer cashew-growing guidebook. Take a photo of leaves, flowers or fruit to check for problems.
+          Answers come from a Khmer cashew-growing guidebook. Take a photo to check for 8 documented pests and diseases.
         </p>
         {canListen && (
           <p className="mt-3 flex items-center gap-2.5 border-t border-brand/20 pt-2.5">

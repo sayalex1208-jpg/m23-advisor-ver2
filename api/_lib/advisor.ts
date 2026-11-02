@@ -9,7 +9,7 @@ import { KNOWLEDGE_BASE } from "./knowledge-base.js";
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 
 export const ChatReply = z.object({
-  reply_km: z.string().describe("The answer in Khmer: a few short, practical sentences for a farmer on a phone."),
+  reply_km: z.string().describe("The answer in Khmer: maximum 2-3 very short, punchy bullet lines for a farmer on a phone. Directly state the exact medicine/fertilizer, dosage per 20L water, and spray time. No long introductory text."),
   gloss_en: z.string().describe("A 1-2 sentence English summary of the same answer."),
   sources: z.array(z.number().int()).describe("Knowledge base entry numbers (#) the answer is based on. Empty if none."),
 });
@@ -35,7 +35,7 @@ const ChatReplyJsonSchema: Schema = {
   properties: {
     reply_km: {
       type: Type.STRING,
-      description: "The answer in Khmer: a few short, practical sentences for a farmer on a phone.",
+      description: "The answer in Khmer: maximum 2-3 very short, punchy bullet lines for a farmer on a phone. Directly state the exact medicine/fertilizer, dosage per 20L water, and spray time. No long introductory text.",
     },
     gloss_en: {
       type: Type.STRING,
@@ -328,19 +328,47 @@ export async function handleAdvisor(body: unknown): Promise<ChatReply | Diagnosi
 
 // ---------- rate limiting ----------
 
-// In-memory and per server instance: enough to stop one phone (or a stranger
-// who finds the URL) from draining the API credit during the demo. Swap for a
-// shared store such as Upstash Redis before a wide launch.
-const WINDOW_MS = 10 * 60 * 1000;
+// IMPORTANT: This is in-memory per-instance rate limiting. For production with
+// multiple Vercel instances, use Upstash Redis or Vercel KV. This is good enough
+// for demos but a determined user can bypass by triggering new cold starts.
+const WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_REQUESTS_PER_WINDOW = 30;
+const MAX_PHOTO_REQUESTS_PER_WINDOW = 10; // Photos cost more
 const recent = new Map<string, number[]>();
+const recentPhotos = new Map<string, number[]>();
 
-export function checkRateLimit(clientId: string) {
+export function checkRateLimit(clientId: string, isPhoto: boolean = false) {
   const now = Date.now();
+  
+  // Check general request limit
   const hits = (recent.get(clientId) ?? []).filter((t) => now - t < WINDOW_MS);
   if (hits.length >= MAX_REQUESTS_PER_WINDOW) {
-    throw new AdvisorError("rate_limited", "Too many questions in a short time.", 429);
+    throw new AdvisorError("rate_limited", "Too many questions in a short time. Please wait a few minutes.", 429);
   }
   hits.push(now);
   recent.set(clientId, hits);
+  
+  // Check photo-specific limit (photos are more expensive)
+  if (isPhoto) {
+    const photoHits = (recentPhotos.get(clientId) ?? []).filter((t) => now - t < WINDOW_MS);
+    if (photoHits.length >= MAX_PHOTO_REQUESTS_PER_WINDOW) {
+      throw new AdvisorError("rate_limited", "Too many photo checks. Please wait before sending more photos.", 429);
+    }
+    photoHits.push(now);
+    recentPhotos.set(clientId, photoHits);
+  }
+  
+  // Cleanup old entries periodically to prevent memory leak
+  if (Math.random() < 0.01) { // 1% chance on each request
+    for (const [id, times] of recent.entries()) {
+      const filtered = times.filter((t) => now - t < WINDOW_MS);
+      if (filtered.length === 0) recent.delete(id);
+      else recent.set(id, filtered);
+    }
+    for (const [id, times] of recentPhotos.entries()) {
+      const filtered = times.filter((t) => now - t < WINDOW_MS);
+      if (filtered.length === 0) recentPhotos.delete(id);
+      else recentPhotos.set(id, filtered);
+    }
+  }
 }

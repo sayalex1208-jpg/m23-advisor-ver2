@@ -14,7 +14,7 @@ export function RegisterForm({
   cancelLabel,
 }: {
   initialVillage?: string;
-  onDone: (account: Extract<Account, { status: "registered" }>) => void;
+  onDone: (account: Extract<Account, { status: "registered" }>, linkingCode: string | null) => void;
   onCancel: () => void;
   cancelLabel: { km: string; en: string };
 }) {
@@ -38,7 +38,10 @@ export function RegisterForm({
         const result = await register(name.trim(), phone, village.trim());
         setBusy(false);
         if (!result.ok) return setError(result.code);
-        onDone({ status: "registered", name: name.trim(), phone: result.phone, village: village.trim(), at: new Date().toISOString() });
+        onDone(
+          { status: "registered", name: name.trim(), phone: result.phone, village: village.trim(), at: new Date().toISOString() },
+          result.linkingCode,
+        );
       }}
     >
       <Field id="reg-name" km="ឈ្មោះ" en="Name">

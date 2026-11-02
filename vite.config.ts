@@ -17,6 +17,7 @@ function devApi(): Plugin {
           route !== "/api/advisor" &&
           route !== "/api/feedback" &&
           route !== "/api/register" &&
+          route !== "/api/link" &&
           route !== "/api/tts" &&
           route !== "/api/telegram"
         )

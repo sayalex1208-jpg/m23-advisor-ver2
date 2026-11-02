@@ -10,6 +10,8 @@ import {
   recordSpray,
   recordInquiry,
   getFarmerSummary,
+  issueLinkingCode,
+  linkByCode,
   type FarmerRecord,
 } from "./_lib/db.js";
 
@@ -153,6 +155,25 @@ async function sendAudio(chatId: number | string, audioBuffer: Buffer, caption?:
   return res.json().catch(() => null);
 }
 
+// Send both text message AND automatic voice note
+async function sendAnswerWithVoice(
+  chatId: number | string,
+  htmlText: string,
+  spokenText: string,
+  extra: Record<string, unknown> = {},
+) {
+  await sendMessage(chatId, htmlText, extra);
+  try {
+    const cleanSpoken = spokenText.replace(/<[^>]+>/g, "").slice(0, 800);
+    const audioBuf = await synthesizeKhmer(cleanSpoken);
+    if (audioBuf && audioBuf.length > 0) {
+      await sendAudio(chatId, audioBuf, "🔊 សំឡេងណែនាំ");
+    }
+  } catch (err) {
+    console.warn("TTS audio failed:", err);
+  }
+}
+
 // Download file bytes from Telegram and return base64 string
 async function getTelegramPhotoBase64(fileId: string): Promise<{ base64: string; mimeType: "image/jpeg" } | null> {
   const fileInfo = await tgApi("getFile", { file_id: fileId });
@@ -187,58 +208,74 @@ async function getTelegramAudioBase64(fileId: string): Promise<{ base64: string;
   };
 }
 
-// Build Monthly seasonal advice in Khmer
-function getMonthlyAdviceMessage(): string {
+// Build Monthly seasonal advice in Khmer (Ultra-short, 3 punchy lines)
+function getMonthlyAdviceMessage(): { text: string; spoken: string } {
   const m = new Date().getMonth() + 1;
   const monthNameKm = KHMER_MONTHS[m - 1] ?? `ខែទី${toKhmerDigits(m)}`;
   const season = SEASONS[m] ?? SEASONS[11];
+  const topTask = season.tasks[0] || "ថែទាំចម្ការធម្មតា";
+  const topPest = season.pests[0] || "មមាចមូស";
 
-  let msg = `📅 <b>កិច្ចការចម្ការស្វាយចន្ទី — ខែ${monthNameKm} (ខែទី ${toKhmerDigits(m)})</b>\n`;
-  msg += `🌾 <b>ដំណាក់កាល៖</b> ${season.km} (${season.en})\n\n`;
+  const text =
+    `📅 <b>ខែ${monthNameKm} — ដំណាក់កាល៖ ${season.km}</b>\n\n` +
+    `✅ <b>កិច្ចការបន្ទាន់៖</b> ${topTask}\n` +
+    `⚠️ <b>សត្វល្អិតត្រូវប្រយ័ត្ន៖</b> ${topPest}`;
 
-  if (season.tasks.length > 0) {
-    msg += `<b>✅ កិច្ចការសំខាន់ត្រូវធ្វើក្នុងខែនេះ៖</b>\n`;
-    for (const t of season.tasks) {
-      msg += `• ${t}\n`;
-    }
-    msg += `\n`;
-  }
+  const spoken = `ខែ${monthNameKm} ដំណាក់កាល ${season.km}។ កិច្ចការបន្ទាន់៖ ${topTask}។ សត្វល្អិតត្រូវប្រយ័ត្នគឺ ${topPest}។`;
 
-  if (season.pests.length > 0) {
-    msg += `<b>⚠️ សត្វល្អិតត្រូវប្រុងប្រយ័ត្ន៖</b>\n`;
-    for (const p of season.pests) {
-      msg += `• <b>${p}</b>\n`;
-    }
-    msg += `\n`;
-  }
-
-  msg += `💡 <i>បងប្អូនអាចសួរសំណួរ ឬផ្ញើរូបភាពស្លឹក/ផ្កាមកទីនេះ ដើម្បីពិនិត្យបានភ្លាមៗ!</i>`;
-  return msg;
+  return { text, spoken };
 }
 
-// Welcome greeting message
+// Bottom Persistent Keyboard (sits under the typing input bar — clean Khmer, no slashes)
+const BOTTOM_KEYBOARD = {
+  keyboard: [
+    [{ text: "🗓️ កិច្ចការខែនេះ" }, { text: "📋 កាតចម្ការរបស់ខ្ញុំ" }],
+    [{ text: "🐛 សត្វមមាចមូស" }, { text: "🌸 ការថែទាំផ្កា" }],
+    [{ text: "📍 កំណត់ចម្ការ" }, { text: "❓ របៀបប្រើ" }],
+  ],
+  resize_keyboard: true,
+  is_persistent: true,
+};
+
+// Shows the farmer the 4-digit code they need to link their web account.
+async function sendLinkingCode(chatId: number | string, farmer: FarmerRecord | null) {
+  if (!farmer) return;
+  // A farmer who already has a phone number is linked to the web already.
+  if (farmer.phone) {
+    await sendMessage(
+      chatId,
+      `✅ <b>គណនាជាមួយកម្មវិធីគេហទំព័ររួចហើយ។</b>\n` +
+        `គណនា៖ ${farmer.phone}\n\n` +
+        `Your account is already linked to the web app.`,
+    );
+    return;
+  }
+
+  const code = farmer.linking_code || (await issueLinkingCode(farmer.id));
+  if (!code) return;
+
+  await sendMessage(
+    chatId,
+    `🔗 <b>ភ្ជាក់គណនាជាមួយកម្មវិធីគេហទំព័រ</b>\n\n` +
+      `លេខកូដរបស់អ្នក៖ <b>${code}</b>\n\n` +
+      `សូមបញ្ចូលលេខនេះនៅកម្មវិធីគេហទំព័រ រួចចុច <b>ចុះឈ្មោះ</b>។\n\n` +
+      `Your code is <b>${code}</b>. Enter it on the web app when you register, then your phone records and your Telegram account join together.`,
+  );
+}
+
+// Welcome greeting message (Ultra-short, voice friendly, no code slashes)
 function getWelcomeMessage(firstName?: string): { text: string; reply_markup: Record<string, unknown> } {
   const greeting = firstName ? `សួស្តីបង <b>${firstName}</b>!` : `សួស្តីបងប្អូនកសិករ!`;
   const text =
-    `${greeting}\n\n` +
-    `ខ្ញុំជា <b>ទីប្រឹក្សាស្វាយចន្ទី M-23 (Cashew Advisor Bot)</b> 🇰🇭\n` +
-    `ខ្ញុំអាចជួយបងប្អូនដោះស្រាយរាល់ចម្ងល់លើដំណាំស្វាយចន្ទីបានភ្លាមៗ៖\n\n` +
-    `💬 <b>សួរសំណួរ៖</b> វាយជាអក្សរខ្មែរ (ឧ. <i>មមាចមូសត្រូវបាញ់ថ្នាំអី?</i>)\n` +
-    `📷 <b>ពិនិត្យជំងឺ៖</b> ថតរូបស្លឹក ផ្កា ឬផ្លែដែលមានបញ្ហា ហើយផ្ញើមកទីនេះ\n` +
-    `🗓️ <b>កិច្ចការខែនេះ៖</b> ចុចប៊ូតុងខាងក្រោម ឬវាយ <code>/today</code>\n\n` +
-    `តើបងប្អូនចង់ដឹងអ្វីខ្លះនៅថ្ងៃនេះ? សូមជ្រើសរើស ឬវាយសំណួរខាងក្រោម៖`;
+    `${greeting} 🌾\n` +
+    `ខ្ញុំជា <b>ទីប្រឹក្សាស្វាយចន្ទី M-23</b>។\n\n` +
+    `👉 <b>ចុចប៊ូតុងធំៗខាងក្រោម</b> ឬ <b>ថតរូបស្លឹកឈឺផ្ញើមក</b> ឬ <b>ចុចសង្កត់លើមេក្រូដើម្បីនិយាយ</b>។`;
 
   const reply_markup = {
     inline_keyboard: [
+      [{ text: "📍 កំណត់ទីតាំងចម្ការ", callback_data: "cmd_setup" }],
+      [{ text: "🔗 ភ្ជាក់គណនា Telegram", callback_data: "cmd_link" }],
       [{ text: "🗓️ កិច្ចការសំខាន់ខែនេះ", callback_data: "cmd_today" }],
-      [
-        { text: "🐛 សត្វមមាចមូស", callback_data: "ask_tmb" },
-        { text: "🌸 ការថែទាំផ្កា", callback_data: "ask_bloom" },
-      ],
-      [
-        { text: "💧 សន្សើមប្រៃ", callback_data: "ask_dew" },
-        { text: "🌱 របៀបដាក់ជី", callback_data: "ask_fert" },
-      ],
     ],
   };
 
@@ -371,6 +408,11 @@ export async function POST(request: Request) {
         return Response.json({ ok: true });
       }
 
+      if (data === "cmd_link") {
+        await sendLinkingCode(chatId, farmer);
+        return Response.json({ ok: true });
+      }
+
       if (data === "cmd_setup") {
         await sendMessage(
           chatId,
@@ -395,39 +437,80 @@ export async function POST(request: Request) {
       }
 
       if (data === "cmd_today") {
-        await sendMessage(chatId, getMonthlyAdviceMessage());
+        const advice = getMonthlyAdviceMessage();
+        await sendAnswerWithVoice(chatId, advice.text, advice.spoken);
       } else if (data === "ask_tmb") {
         await sendChatAction(chatId, "typing");
         const reply = (await handleAdvisor({
           mode: "chat",
           farm: farmContext,
-          turns: [{ role: "user", content: "តើសត្វមមាចមូសលើស្វាយចន្ទីបង្កផលប៉ះពាល់អ្វីខ្លះ ហើយត្រូវកម្ចាត់ដូចម្តេច?" }],
+          turns: [
+            {
+              role: "user",
+              content:
+                "តើសត្វមមាចមូសលើស្វាយចន្ទីបង្កផលប៉ះពាល់អ្វីខ្លះ ហើយត្រូវកម្ចាត់ដូចម្តេច? សូមឆ្លើយខ្លីៗបំផុត ២-៣ ជួរ ដាក់ឈ្មោះថ្នាំ កម្រិតប្រើ និងម៉ោងបាញ់",
+            },
+          ],
         })) as ChatReply;
-        await sendMessage(chatId, `🐛 <b>សត្វមមាចមូស (Tea Mosquito Bug)</b>\n\n${reply.reply_km}`);
+        await sendAnswerWithVoice(
+          chatId,
+          `🐛 <b>សត្វមមាចមូស (Tea Mosquito Bug)</b>\n\n${reply.reply_km}`,
+          reply.reply_km,
+        );
       } else if (data === "ask_bloom") {
         await sendChatAction(chatId, "typing");
         const reply = (await handleAdvisor({
           mode: "chat",
           farm: farmContext,
-          turns: [{ role: "user", content: "ពេលស្វាយចន្ទីចេញផ្ការីក តើត្រូវថែទាំ និងបាញ់ថ្នាំនៅម៉ោងណាទើបមិនខូចផ្កា?" }],
+          turns: [
+            {
+              role: "user",
+              content:
+                "ពេលស្វាយចន្ទីចេញផ្ការីក តើត្រូវបាញ់ថ្នាំនៅម៉ោងណាទើបមិនខូចផ្កា? សូមឆ្លើយខ្លីៗបំផុត ២ ជួរ",
+            },
+          ],
         })) as ChatReply;
-        await sendMessage(chatId, `🌸 <b>ការថែទាំផ្ការីក</b>\n\n${reply.reply_km}`);
+        await sendAnswerWithVoice(
+          chatId,
+          `🌸 <b>ការថែទាំផ្ការីក</b>\n\n${reply.reply_km}`,
+          reply.reply_km,
+        );
       } else if (data === "ask_dew") {
         await sendChatAction(chatId, "typing");
         const reply = (await handleAdvisor({
           mode: "chat",
           farm: farmContext,
-          turns: [{ role: "user", content: "តើសន្សើមប្រៃជាអ្វី ហើយពេលណាត្រូវបាញ់ថ្នាំការពារ?" }],
+          turns: [
+            {
+              role: "user",
+              content:
+                "តើសន្សើមប្រៃជាអ្វី ហើយពេលណាត្រូវបាញ់ថ្នាំការពារ? សូមឆ្លើយខ្លីៗបំផុត ២ ជួរ ដាក់ឈ្មោះថ្នាំ",
+            },
+          ],
         })) as ChatReply;
-        await sendMessage(chatId, `💧 <b>ការការពារសន្សើមប្រៃ</b>\n\n${reply.reply_km}`);
+        await sendAnswerWithVoice(
+          chatId,
+          `💧 <b>ការការពារសន្សើមប្រៃ</b>\n\n${reply.reply_km}`,
+          reply.reply_km,
+        );
       } else if (data === "ask_fert") {
         await sendChatAction(chatId, "typing");
         const reply = (await handleAdvisor({
           mode: "chat",
           farm: farmContext,
-          turns: [{ role: "user", content: "តើស្វាយចន្ទីត្រូវដាក់ជីរូបមន្តអ្វីខ្លះ ហើយដាក់នៅខែណា?" }],
+          turns: [
+            {
+              role: "user",
+              content:
+                "តើស្វាយចន្ទីត្រូវដាក់ជីរូបមន្តអ្វីខ្លះ? សូមឆ្លើយខ្លីៗបំផុត ២ ជួរ ដាក់រូបមន្តជី",
+            },
+          ],
         })) as ChatReply;
-        await sendMessage(chatId, `🌱 <b>ការប្រើប្រាស់ជីលើស្វាយចន្ទី</b>\n\n${reply.reply_km}`);
+        await sendAnswerWithVoice(
+          chatId,
+          `🌱 <b>ការប្រើប្រាស់ជី</b>\n\n${reply.reply_km}`,
+          reply.reply_km,
+        );
       }
 
       return Response.json({ ok: true });
@@ -465,34 +548,23 @@ export async function POST(request: Request) {
       })) as Diagnosis;
 
       let replyMsg = "";
+      let spokenDiag = "";
       if (diagnosis.matched) {
-        replyMsg += `🔍 <b>លទ្ធផលវិភាគ៖ ${diagnosis.title_km}</b>\n`;
+        replyMsg += `🔍 <b>${diagnosis.title_km}</b>\n`;
         if (diagnosis.title_en) replyMsg += `<i>(${diagnosis.title_en})</i>\n\n`;
 
-        if (diagnosis.symptoms_km) {
-          replyMsg += `📌 <b>រោគសញ្ញាសម្គាល់៖</b>\n${diagnosis.symptoms_km}\n\n`;
-        }
-
         if (diagnosis.steps_km && diagnosis.steps_km.length > 0) {
-          replyMsg += `💊 <b>វិធានការដោះស្រាយ & ថ្នាំណែនាំ៖</b>\n`;
-          for (const s of diagnosis.steps_km) {
+          replyMsg += `💊 <b>ថ្នាំ & កម្រិតប្រើ៖</b>\n`;
+          for (const s of diagnosis.steps_km.slice(0, 2)) {
             replyMsg += `• ${s}\n`;
           }
-          replyMsg += `\n`;
         }
-
-        if (diagnosis.confidence_km) {
-          replyMsg += `ℹ️ <i>${diagnosis.confidence_km}</i>`;
-        }
+        spokenDiag = `លទ្ធផលវិភាគ៖ ${diagnosis.title_km}។ ${diagnosis.steps_km?.slice(0, 2).join(". ") || ""}`;
       } else {
-        replyMsg += `⚠️ <b>មិនអាចកំណត់ជំងឺបានច្បាស់លាស់ទេ</b>\n\n`;
-        if (diagnosis.symptoms_km) replyMsg += `${diagnosis.symptoms_km}\n\n`;
-        if (diagnosis.steps_km && diagnosis.steps_km.length > 0) {
-          replyMsg += `💡 <b>ការណែនាំ៖</b>\n`;
-          for (const s of diagnosis.steps_km) {
-            replyMsg += `• ${s}\n`;
-          }
-        }
+        replyMsg += `⚠️ <b>មិនទាន់ច្បាស់លាស់ទេ</b>\n\n`;
+        const advice = diagnosis.steps_km?.[0] || "សូមថតរូបស្លឹក ឬផ្កាឱ្យជិត និងច្បាស់ក្រោមពន្លឺថ្ងៃ";
+        replyMsg += `💡 ${advice}\n`;
+        spokenDiag = `មិនទាន់ច្បាស់លាស់ទេ។ ${advice}`;
       }
 
       // Record photo diagnosis to database
@@ -512,13 +584,13 @@ export async function POST(request: Request) {
       if (diagnosis.matched && farmer) {
         photoButtons.unshift([
           {
-            text: "✅ កត់ត្រាការបាញ់ថ្នាំនេះ (Log Spray)",
+            text: "✅ កត់ត្រាការបាញ់ថ្នាំនេះ",
             callback_data: `log_spray:fungus:${diagnosis.title_en.slice(0, 15)}`,
           },
         ]);
       }
 
-      await sendMessage(chatId, replyMsg, {
+      await sendAnswerWithVoice(chatId, replyMsg, spokenDiag, {
         reply_markup: {
           inline_keyboard: photoButtons,
         },
@@ -586,19 +658,146 @@ export async function POST(request: Request) {
     if (text) {
       // /start command
       if (text.startsWith("/start")) {
+        // Activate persistent keyboard under the typing bar
+        await sendMessage(
+          chatId,
+          `🌾 <b>សូមស្វាគមន៍មកកាន់ M23 Cashew Advisor!</b>\nប៊ូតុងមុខងាររហ័សត្រូវបានដាក់នៅខាងក្រោមរបារវាយអក្សរ។`,
+          { reply_markup: BOTTOM_KEYBOARD },
+        );
+
         const welcome = getWelcomeMessage(message.from?.first_name);
         const kb = [...(welcome.reply_markup.inline_keyboard as any[])];
         if (!farmer?.province) {
           kb.unshift([{ text: "📍 កំណត់ទីតាំងចម្ការ (Set Farm)", callback_data: "cmd_setup" }]);
         }
         await sendMessage(chatId, welcome.text, { reply_markup: { inline_keyboard: kb } });
+
+        // Show the linking code, so the farmer can join their web account.
+        await sendLinkingCode(chatId, farmer);
         return Response.json({ ok: true });
       }
 
-      // /passport or /profile command (Farm Passport overview from DB)
-      if (text.startsWith("/passport") || text.includes("កាត") || text.includes("របាយការណ៍")) {
+      // /link 1234 — connect this Telegram account to a web registration.
+      if (text.startsWith("/link")) {
+        const code = text.replace(/^\/link\s*/i, "").replace(/\s+/g, "");
+        if (!/^\d{4}$/.test(code)) {
+          await sendMessage(
+            chatId,
+            `❌ <b>លេខកូដមិនត្រឹមត្រូវ។</b>\n\n` +
+              `សូមវាយលេខ ៤ ដូចតែ <b>/link 1234</b>\n\n` +
+              `That is not a 4-digit code. Type it like <b>/link 1234</b>.`,
+          );
+          return Response.json({ ok: true });
+        }
+
         if (!farmer) {
-          await sendMessage(chatId, "⚠️ មិនទាន់មានទិន្នន័យចម្ការទេ។ សូមផ្ញើ /start ដើម្បីចាប់ផ្តើម។");
+          await sendMessage(chatId, "⚠️ មិនអាចភ្ជាក់បានទេ។ សូមសាកល្បងម្តងទៀត។");
+          return Response.json({ ok: true });
+        }
+
+        // The code holder is the web registration; this Telegram row merges into it.
+        const result = await linkByCode(farmer.id, code);
+        if (result.ok) {
+          await sendMessage(
+            chatId,
+            `✅ <b>ភ្ជាក់គណនាដោយជោគជោគរួចរាល់!</b>\n\n` +
+              `ឥឡូវនេះកាតចម្ការ និងកំណត់ត្រាបាញ់ថ្នាំរបស់អ្នកនឹងបង្ហាញក្នុងទូរស័ព្ទ និងនៅទីនេះដើម្បីដាក់ព័ត៌មាន។ 🌾\n\n` +
+              `Your farm card and spray records are now the same on your phone and in Telegram.`,
+          );
+        } else {
+          const messages: Record<string, string> = {
+            not_found:
+              `❌ <b>រកមិនឃើញលេខកូដនេះទេ។</b>\n\n` +
+              `សូមពិនិត្យលេខ ៤ ដងទៀត ហើយប្រាកដថា អ្នកបានចុះឈ្មោះនៅគេហទំព័រ។\n\n` +
+              `No code matches. Check the 4 digits and make sure you registered on the web app first.`,
+            expired:
+              `⌛ <b>លេខកូដបានផុតកំណត់។</b>\n\n` +
+              `សូមចុះឈ្មោះម្តងទៀតនៅគេហទំព័រ ដើម្បីបានលេខកូដថ្មី។\n\n` +
+              `That code has expired. Register again on the web app to get a fresh one.`,
+            conflict:
+              `⚠️ <b>គណនាមិនអាចបាន។</b>\n\n` +
+              `លេខកូដនេះជាការចុះឈ្មោះមួយផ្សេងទៀត។ សូមសួរម្នាក់ការងារយើង។\n\n` +
+              `That code belongs to a different registration. Please contact our team.`,
+            self:
+              `ℹ️ <b>លេខកូដនេះជារបស់អ្នកឯង។</b>\n\n` +
+              `សូមប្រើលេខកូដពីការចុះឈ្មោះនៅគេហទំព័រ។\n\n` +
+              `That is your own code. Use the code shown on the web app after you register there.`,
+          };
+          const fallback =
+            `❌ <b>មិនអាចភ្ជាក់បានទេ។</b> សូមសាកល្បងម្តងទៀត។\n\nCould not link. Please try again.`;
+          await sendMessage(chatId, messages[result.reason] ?? fallback);
+        }
+        return Response.json({ ok: true });
+      }
+
+      // Persistent keyboard button: Set Farm
+      if (text.includes("កំណត់ចម្ការ")) {
+        await sendMessage(chatId, `🌾 <b>ជ្រើសរើសខេត្តដែលចម្ការរបស់អ្នកស្ថិតនៅ៖</b>`, {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: "📍 កំពង់ធំ", callback_data: "set_prov:កំពង់ធំ" },
+                { text: "📍 ក្រចេះ", callback_data: "set_prov:ក្រចេះ" },
+              ],
+              [
+                { text: "📍 រតនគិរី", callback_data: "set_prov:រតនគិរី" },
+                { text: "📍 កំពង់ចាម", callback_data: "set_prov:កំពង់ចាម" },
+              ],
+              [{ text: "📍 ផ្សេងៗ", callback_data: "set_prov:ផ្សេងៗ" }],
+            ],
+          },
+        });
+        return Response.json({ ok: true });
+      }
+
+      // Persistent keyboard button: Tea Mosquito Bug
+      if (text.includes("សត្វមមាចមូស") || text.includes("មមាចមូស")) {
+        await sendChatAction(chatId, "typing");
+        const reply = (await handleAdvisor({
+          mode: "chat",
+          farm: farmContext,
+          turns: [
+            {
+              role: "user",
+              content:
+                "តើសត្វមមាចមូសលើស្វាយចន្ទីបង្កផលប៉ះពាល់អ្វីខ្លះ ហើយត្រូវកម្ចាត់ដូចម្តេច? សូមឆ្លើយខ្លីៗបំផុត ២-៣ ជួរ ដាក់ឈ្មោះថ្នាំ កម្រិតប្រើ និងម៉ោងបាញ់",
+            },
+          ],
+        })) as ChatReply;
+        await sendAnswerWithVoice(
+          chatId,
+          `🐛 <b>សត្វមមាចមូស (Tea Mosquito Bug)</b>\n\n${reply.reply_km}`,
+          reply.reply_km,
+        );
+        return Response.json({ ok: true });
+      }
+
+      // Persistent keyboard button: Flower care
+      if (text.includes("ការថែទាំផ្កា") || text.includes("ថែទាំផ្កា")) {
+        await sendChatAction(chatId, "typing");
+        const reply = (await handleAdvisor({
+          mode: "chat",
+          farm: farmContext,
+          turns: [
+            {
+              role: "user",
+              content:
+                "ពេលស្វាយចន្ទីចេញផ្ការីក តើត្រូវបាញ់ថ្នាំនៅម៉ោងណាទើបមិនខូចផ្កា? សូមឆ្លើយខ្លីៗបំផុត ២ ជួរ",
+            },
+          ],
+        })) as ChatReply;
+        await sendAnswerWithVoice(
+          chatId,
+          `🌸 <b>ការថែទាំផ្ការីក</b>\n\n${reply.reply_km}`,
+          reply.reply_km,
+        );
+        return Response.json({ ok: true });
+      }
+
+      // /passport or Farm Card overview from DB (Ultra-short, no code slashes)
+      if (text.startsWith("/passport") || text.includes("កាតចម្ការ") || text.includes("កាត") || text.includes("របាយការណ៍")) {
+        if (!farmer) {
+          await sendMessage(chatId, "⚠️ មិនទាន់មានទិន្នន័យចម្ការទេ។ សូមចុចប៊ូតុង [ 📍 កំណត់ចម្ការ ]");
           return Response.json({ ok: true });
         }
         const summary = await getFarmerSummary(farmer.id);
@@ -606,17 +805,16 @@ export async function POST(request: Request) {
         const harvestCount = summary?.harvests?.length ?? 0;
 
         const passMsg =
-          `📋 <b>សៀវភៅតាមដានចម្ការ (Farm Passport)</b>\n\n` +
+          `📋 <b>កាតចម្ការស្វាយចន្ទី</b>\n\n` +
           `👤 <b>កសិករ៖</b> ${farmer.name_km || farmer.telegram_username || "កសិករស្វាយចន្ទី"}\n` +
-          `📍 <b>ខេត្ត៖</b> ${farmer.province || "មិនទាន់កំណត់ (ចុច /start ដើម្បីជ្រើសរើស)"}\n` +
-          `🌳 <b>អាយុដើម៖</b> ${farmer.tree_age_years ? `${toKhmerDigits(farmer.tree_age_years)} ឆ្នាំ` : "មិនទាន់កំណត់"}\n` +
-          `🌾 <b>ទំហំដី៖</b> ${farmer.hectares ? `${toKhmerDigits(farmer.hectares)} ហិកតា` : "មិនទាន់កំណត់"}\n\n` +
-          `📊 <b>កំណត់ត្រាក្នុងទិន្នន័យកណ្តាល (Supabase DB)៖</b>\n` +
-          `• ការបាញ់ថ្នាំបានកត់ត្រា៖ <b>${toKhmerDigits(sprayCount)}</b> លើក\n` +
-          `• ការលក់ផលបានកត់ត្រា៖ <b>${toKhmerDigits(harvestCount)}</b> លើក\n\n` +
-          `🔒 <i>ទិន្នន័យនេះត្រូវបានរក្សាទុកដើម្បីបញ្ជាក់ពីស្តង់ដារគុណភាព និងសុវត្ថិភាពថ្នាំ សម្រាប់អ្នកទិញគ្រាប់នាំចេញ។</i>`;
+          `📍 <b>ខេត្ត៖</b> ${farmer.province || "មិនទាន់កំណត់"} | <b>ដើមអាយុ៖</b> ${farmer.tree_age_years ? `${toKhmerDigits(farmer.tree_age_years)} ឆ្នាំ` : "មិនទាន់កំណត់"}\n\n` +
+          `📊 <b>កំណត់ត្រាក្នុងប្រព័ន្ធ៖</b>\n` +
+          `• បាញ់ថ្នាំរួចរាល់៖ <b>${toKhmerDigits(sprayCount)}</b> លើក ✅\n` +
+          `• លក់ផលបានកត់ត្រា៖ <b>${toKhmerDigits(harvestCount)}</b> លើក ✅`;
 
-        await sendMessage(chatId, passMsg, {
+        const spokenPass = `កាតចម្ការរបស់បង ${farmer.name_km || ""}។ បាញ់ថ្នាំបានកត់ត្រាចំនួន ${sprayCount} លើក។ លក់ផលបានកត់ត្រា ${harvestCount} លើក។`;
+
+        await sendAnswerWithVoice(chatId, passMsg, spokenPass, {
           reply_markup: {
             inline_keyboard: [
               [{ text: "📍 កែប្រែព័ត៌មានចម្ការ", callback_data: "cmd_setup" }],
@@ -627,9 +825,10 @@ export async function POST(request: Request) {
         return Response.json({ ok: true });
       }
 
-      // /today or /month or /season command
+      // /today or Monthly task button
       if (text.startsWith("/today") || text.startsWith("/season") || text.includes("ខែនេះ") || text.includes("កិច្ចការ")) {
-        await sendMessage(chatId, getMonthlyAdviceMessage(), {
+        const advice = getMonthlyAdviceMessage();
+        await sendAnswerWithVoice(chatId, advice.text, advice.spoken, {
           reply_markup: {
             inline_keyboard: [
               [{ text: "🐛 សត្វមមាចមូស", callback_data: "ask_tmb" }, { text: "🌸 ការថែទាំផ្កា", callback_data: "ask_bloom" }],
@@ -639,20 +838,20 @@ export async function POST(request: Request) {
         return Response.json({ ok: true });
       }
 
-      // /help command
-      if (text.startsWith("/help")) {
+      // /help or Help button
+      if (text.startsWith("/help") || text.includes("របៀបប្រើ") || text.includes("ជំនួយ")) {
         const helpText =
-          `📖 <b>របៀបប្រើប្រាស់ M23 Cashew Advisor Bot</b>\n\n` +
-          `1️⃣ <b>សួរសំណួរ៖</b> វាយសំណួររបស់អ្នកជាភាសាខ្មែរ ឬផ្ញើសារសំឡេង\n` +
-          `2️⃣ <b>ពិនិត្យជំងឺ៖</b> ថតរូបភាពស្លឹក ផ្កា ឬដើម រួចផ្ញើជា Photo\n` +
-          `3️⃣ <b>កាតចម្ការ៖</b> វាយពាក្យ <code>/passport</code> ដើម្បីមើលកំណត់ត្រាបាញ់ថ្នាំ\n` +
-          `4️⃣ <b>កិច្ចការខែនេះ៖</b> វាយពាក្យ <code>/today</code> ដើម្បីមើលការណែនាំតាមរដូវកាល\n\n` +
-          `🌐 <b>គេហទំព័រពេញលេញ៖</b> <a href="https://m23-cashew-advisor.vercel.app">m23-cashew-advisor.vercel.app</a>`;
-        await sendMessage(chatId, helpText);
+          `❓ <b>របៀបប្រើប្រាស់ងាយៗ</b>\n\n` +
+          `1️⃣ <b>សួរសំណួរ៖</b> ចុចសង្កត់លើមេក្រូដើម្បីនិយាយ\n` +
+          `2️⃣ <b>ពិនិត្យជំងឺ៖</b> ថតរូបស្លឹក ឬផ្កាផ្ញើមកទីនេះ\n` +
+          `3️⃣ <b>កិច្ចការខែនេះ៖</b> ចុចប៊ូតុង [ 🗓️ កិច្ចការខែនេះ ] នៅខាងក្រោមដៃ`;
+        const spokenHelp =
+          "របៀបប្រើប្រាស់ងាយៗ៖ ទីមួយ ចុចសង្កត់លើមេក្រូដើម្បីនិយាយសួរសំណួរ។ ទីពីរ ថតរូបស្លឹក ឬផ្កាផ្ញើមកទីនេះដើម្បីពិនិត្យជំងឺ។ ទីបី ចុចប៊ូតុងកិច្ចការខែនេះនៅខាងក្រោមដៃ។";
+        await sendAnswerWithVoice(chatId, helpText, spokenHelp);
         return Response.json({ ok: true });
       }
 
-      // Normal chat question to Gemini Advisor
+      // Normal chat question to Gemini Advisor (Ultra-short + Spoken voice)
       await sendChatAction(chatId, "typing");
       const reply = (await handleAdvisor({
         mode: "chat",
@@ -674,7 +873,7 @@ export async function POST(request: Request) {
         answerText += `\n\n<i>${reply.gloss_en}</i>`;
       }
 
-      await sendMessage(chatId, answerText, {
+      await sendAnswerWithVoice(chatId, answerText, reply.reply_km, {
         reply_markup: {
           inline_keyboard: [
             [{ text: "🗓️ កិច្ចការខែនេះ", callback_data: "cmd_today" }],

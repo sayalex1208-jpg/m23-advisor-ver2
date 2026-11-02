@@ -42,18 +42,18 @@ Both builds share the same knowledge base and behavior rules, generated from `kn
 
 ## Setup
 
-1. Copy `.env.example` to `.env.local` (or set `GEMINI_API_KEY` in your environment or Vercel project settings):
+1. Copy `.env.example` to `.env.local` and fill in the values:
    ```bash
    cp .env.example .env.local
    ```
-2. Get an API key from [Google AI Studio](https://aistudio.google.com/) and paste it into `.env.local`:
-   ```bash
-   GEMINI_API_KEY=your_key_here
-   ```
-3. Run the development server:
+2. Get an API key from [Google AI Studio](https://aistudio.google.com/) and paste it into `.env.local` as `GEMINI_API_KEY`. Without this the app still runs, answering from the knowledge base only.
+3. For registration and the Telegram bot, also set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (Project Settings → API in your Supabase dashboard). The service role key is used server-side only — never expose it to the browser.
+4. Run the development server:
    ```bash
    npm run dev
    ```
+
+Database tables come from `supabase/migrations/20261101_init_schema.sql`; run it in the Supabase SQL editor before registering anyone.
 
 ## Status
 

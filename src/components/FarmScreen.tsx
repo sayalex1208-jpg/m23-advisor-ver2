@@ -8,6 +8,7 @@ import { FarmPassport } from "./FarmPassport";
 import { HarvestLog } from "./HarvestLog";
 import { RegisterForm } from "./RegisterForm";
 import { BackupCard, needsBackup } from "./BackupCard";
+import { LinkTelegramCard } from "./LinkTelegramCard";
 import { AlertIcon } from "./icons";
 import { LocationField } from "./LocationField";
 import { SprayJournal } from "./SprayJournal";
@@ -102,6 +103,7 @@ export function FarmScreen({
         {view === "details" ? (
           <>
             <AccountCard account={account} setAccount={setAccount} village={farm.village} />
+            {account.status === "registered" && <LinkTelegramCard phone={account.phone} />}
             <FarmDetails farm={farm} update={update} onDone={onDone} />
             <BackupCard />
           </>

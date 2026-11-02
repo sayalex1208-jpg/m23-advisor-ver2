@@ -4,8 +4,28 @@
 
 const MAX_EDGE = 1568;
 const QUALITY = 0.82;
+const MAX_FILE_SIZE_MB = 25; // Reject photos larger than 25MB
+
+export class ImageError extends Error {
+  constructor(public code: "too_large" | "invalid_format", message: string) {
+    super(message);
+  }
+}
 
 export async function shrinkPhoto(file: File): Promise<{ base64: string; mediaType: "image/jpeg"; previewUrl: string }> {
+  // Check file size before processing
+  if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+    throw new ImageError(
+      "too_large",
+      `Photo is too large (${Math.round(file.size / 1024 / 1024)}MB). Maximum is ${MAX_FILE_SIZE_MB}MB.`
+    );
+  }
+  
+  // Validate it's actually an image
+  if (!file.type.startsWith("image/")) {
+    throw new ImageError("invalid_format", "Please select a valid image file.");
+  }
+  
   const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
   const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
