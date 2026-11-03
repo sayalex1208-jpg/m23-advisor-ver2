@@ -27,12 +27,12 @@ export function BookAnswer({
 
   return (
     <article className="max-w-[92%] self-start rounded-2xl rounded-tl-sm border border-line bg-surface p-4">
-      <p className="mb-2 flex items-center gap-1.5 text-[12px] font-semibold text-brand">
+      <p className="mb-2 flex items-center gap-1.5 text-[14px] font-semibold text-brand">
         <BookIcon size={15} />
         <span className="km">ចម្លើយពីសៀវភៅ</span> · From the book
       </p>
       {aiFailed && (
-        <p className="mb-2 text-[12px] text-muted">
+        <p className="mb-2 text-[14px] text-muted">
           <span className="km">AI មិនដំណើរការទេ ដូច្នេះនេះជាចម្លើយពីសៀវភៅ។</span> The AI couldn't answer, so here is the book's answer.
         </p>
       )}
@@ -40,10 +40,10 @@ export function BookAnswer({
       {entry ? (
         <>
           <h3 className="km text-[15px] font-semibold">{entry.q_km}</h3>
-          <p className="mb-2 text-[12px] text-muted">{entry.q_en}</p>
+          <p className="mb-2 text-[14px] text-muted">{entry.q_en}</p>
           <ListenButton id={id} text={`${entry.q_km} ${entry.a_km}`} className="mb-2" />
           <p className="km text-[16px]">{entry.a_km}</p>
-          <p className="mt-2 border-t border-line pt-2 text-[13px] text-muted">{entry.a_en}</p>
+          <p className="mt-2 border-t border-line pt-2 text-[15px] text-muted">{entry.a_en}</p>
           <Sources ids={[entry.id]} />
           <Feedback rated={rated} onRate={onRate} />
         </>
@@ -52,20 +52,20 @@ export function BookAnswer({
         <>
           <ListenButton id={id} text={NOT_SURE_KM} className="mb-2" />
           <p className="km text-[15px]">{NOT_SURE_KM}</p>
-          <p className="mt-1 text-[13px] text-muted">Not sure which answer fits your question. Is it one of these?</p>
+          <p className="mt-1 text-[15px] text-muted">Not sure which answer fits your question. Is it one of these?</p>
         </>
       ) : (
         <>
           <ListenButton id={id} text={NOT_FOUND_KM} className="mb-2" />
           <p className="km text-[15px]">រកមិនឃើញចម្លើយក្នុងសៀវភៅទេ។ សូមសួរម្ដងទៀតដោយពាក្យផ្សេង ឬរកក្នុងមគ្គុទ្ទេសក៍។</p>
-          <p className="mt-1 text-[13px] text-muted">No answer found in the book. Try other words, or look in the Guide.</p>
+          <p className="mt-1 text-[15px] text-muted">No answer found in the book. Try other words, or look in the Guide.</p>
         </>
       )}
 
       {related.length > 0 && (
         <div className="mt-4">
           {entry && (
-            <p className="mb-1.5 text-[12px] font-semibold text-muted">
+            <p className="mb-1.5 text-[14px] font-semibold text-muted">
               <span className="km">សំណួរពាក់ព័ន្ធ</span> · Related
             </p>
           )}
@@ -78,8 +78,8 @@ export function BookAnswer({
                   onClick={() => onShow(id)}
                   className="rounded-lg border border-line px-3 py-2 text-left active:bg-brand-soft"
                 >
-                  <span className="km block text-[14px]">{r.q_km}</span>
-                  <span className="block text-[12px] text-muted">{r.q_en}</span>
+                  <span className="km block text-[15px]">{r.q_km}</span>
+                  <span className="block text-[14px] text-muted">{r.q_en}</span>
                 </button>
               );
             })}

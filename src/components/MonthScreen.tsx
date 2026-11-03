@@ -37,12 +37,12 @@ export function MonthScreen({
   return (
     <div className="h-full overflow-y-auto px-4 pb-8 pt-4">
       <header>
-        <p className="text-[12px] font-semibold uppercase tracking-wide text-brand">
+        <p className="text-[14px] font-semibold uppercase tracking-wide text-brand">
           <span className="km normal-case">ខែ{kh(month)}</span> · Month {month}
         </p>
         <h2 className="km text-[24px] font-semibold leading-snug">ខែ{KHMER_MONTHS[month - 1]}</h2>
         <p className="km text-[16px]">{season.km}</p>
-        <p className="text-[13px] text-muted">{season.en}</p>
+        <p className="text-[15px] text-muted">{season.en}</p>
       </header>
 
       {isSetUp(farm) ? (
@@ -52,20 +52,20 @@ export function MonthScreen({
         >
           <FarmIcon size={18} className="shrink-0 text-brand" />
           <span className="min-w-0 flex-1">
-            <span className="km block text-[14px]">
+            <span className="km block text-[15px]">
               {age === 0 ? "ទើបដាំ" : `ដើមអាយុ ${kh(age!)} ឆ្នាំ`} · {SOILS[farm.soil!].km}
             </span>
-            <span className="block text-[12px] text-muted">
+            <span className="block text-[14px] text-muted">
               {age === 0 ? "Planted this year" : `Trees ${age} years old`} · {SOILS[farm.soil!].en}
             </span>
           </span>
-          <span className="km text-[13px] text-brand">កែ · Edit</span>
+          <span className="km text-[15px] text-brand">កែ · Edit</span>
         </button>
       ) : (
         <div className="mt-3 rounded-2xl bg-brand-soft p-4">
           <p className="km text-[15px] font-medium">ប្រាប់អាយុដើម និងប្រភេទដី ដើម្បីឃើញតែការងារសម្រាប់ចម្ការអ្នក។</p>
-          <p className="text-[13px] text-muted">Add your tree age and soil to see only the tasks for your farm.</p>
-          <button onClick={onEditFarm} className="km mt-3 h-11 rounded-xl bg-brand px-4 text-[15px] text-brand-ink">
+          <p className="text-[15px] text-muted">Add your tree age and soil to see only the tasks for your farm.</p>
+          <button onClick={onEditFarm} className="km mt-3 h-12 rounded-xl bg-brand px-4 text-[15px] text-brand-ink">
             រៀបចំចម្ការ · Set up my farm
           </button>
         </div>
@@ -80,14 +80,14 @@ export function MonthScreen({
               return (
                 <li key={log.id} className="flex items-center gap-2 rounded-xl bg-surface px-3 py-2.5">
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[14px] font-medium">{productSummary(log)}</span>
-                    <span className={`km block text-[12px] ${label.overdue ? "text-danger" : "text-muted"}`}>
+                    <span className="block text-[15px] font-medium">{productSummary(log)}</span>
+                    <span className={`km block text-[14px] ${label.overdue ? "text-danger" : "text-muted"}`}>
                       {label.km} · {label.en}
                     </span>
                   </span>
                   <button
                     onClick={() => onOpenJournal(log.id)}
-                    className="km h-10 shrink-0 rounded-lg bg-brand px-3 text-[14px] text-brand-ink"
+                    className="km h-12 shrink-0 rounded-lg bg-brand px-3 text-[15px] text-brand-ink"
                   >
                     កត់ត្រា · Log
                   </button>
@@ -104,12 +104,12 @@ export function MonthScreen({
         <div className="flex items-baseline justify-between">
           <h3 className="km text-[17px] font-semibold">ការងារខែនេះ</h3>
           {tasks.length > 0 && (
-            <span className="km text-[13px] text-muted tabular-nums">
+            <span className="km text-[15px] text-muted tabular-nums">
               រួច {kh(doneCount)}/{kh(tasks.length)}
             </span>
           )}
         </div>
-        <p className="mb-2.5 text-[12px] text-muted">Tasks this month · tap a task to read how</p>
+        <p className="mb-2.5 text-[14px] text-muted">Tasks this month · tap a task to read how</p>
 
         {tasks.length === 0 ? (
           <p className="km rounded-xl border border-line bg-surface p-4 text-[15px]">
@@ -148,9 +148,9 @@ export function MonthScreen({
                       className="min-w-0 flex-1 py-3 pr-3.5 text-left"
                     >
                       <span className={`km block text-[15px] ${isDone ? "text-muted line-through" : ""}`}>{t.km}</span>
-                      <span className="block text-[12px] text-muted">{t.en}</span>
+                      <span className="block text-[14px] text-muted">{t.en}</span>
                       {label && (
-                        <span className="km mt-1 inline-block rounded-full bg-brand-soft px-2 py-0.5 text-[11px] text-brand">
+                        <span className="km mt-1 inline-block rounded-full bg-brand-soft px-2 py-0.5 text-[13px] text-brand">
                           {label.km} · {label.en}
                         </span>
                       )}
@@ -171,7 +171,7 @@ export function MonthScreen({
       {pests.length > 0 && (
         <section className="mt-6">
           <h3 className="km text-[17px] font-semibold">ប្រយ័ត្នខែនេះ</h3>
-          <p className="mb-2.5 text-[12px] text-muted">Watch out for this month · from the book's pest calendar</p>
+          <p className="mb-2.5 text-[14px] text-muted">Watch out for this month · from the book's pest calendar</p>
           <ul className="flex flex-col gap-2">
             {pests.map((p) => {
               const open = openId === `pest-${p.id}`;
@@ -185,7 +185,7 @@ export function MonthScreen({
                     <AlertIcon size={18} className="shrink-0 text-warn" />
                     <span className="min-w-0">
                       <span className="km block text-[15px]">{p.km}</span>
-                      <span className="block text-[12px] text-muted">{p.en}</span>
+                      <span className="block text-[14px] text-muted">{p.en}</span>
                     </span>
                   </button>
                   {open && (
@@ -201,13 +201,13 @@ export function MonthScreen({
       )}
 
       <section className="mt-6 rounded-2xl border border-dashed border-line p-4">
-        <p className="text-[12px] font-semibold uppercase tracking-wide text-muted">
+        <p className="text-[14px] font-semibold uppercase tracking-wide text-muted">
           <span className="km normal-case">ខែក្រោយ</span> · Next month
         </p>
         <p className="km mt-1 text-[16px] font-medium">
           ខែ{KHMER_MONTHS[next - 1]} · {seasonFor(next).km}
         </p>
-        <p className="km text-[13px] text-muted">
+        <p className="km text-[15px] text-muted">
           ការងារ {kh(tasksFor(next, age).length)} · {count(tasksFor(next, age).length, "task")} · {seasonFor(next).en}
         </p>
       </section>

@@ -59,13 +59,13 @@ export function LocationField({
             ) : (
               <>
                 <p className="km text-[15px] font-medium">ទីតាំងចម្ការ (GPS)</p>
-                <p className="text-[13px] tabular-nums text-muted">
+                <p className="text-[15px] tabular-nums text-muted">
                   {location.lat.toFixed(5)}, {location.lon.toFixed(5)}
                   {location.accuracy !== null && <span className="km"> · ±{kh(location.accuracy)} ម</span>}
                 </p>
               </>
             )}
-            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
+            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[15px]">
               <a
                 href={`https://www.google.com/maps?q=${location.lat},${location.lon}`}
                 target="_blank"
@@ -94,17 +94,17 @@ export function LocationField({
             ? "ចាប់ទីតាំងម្ដងទៀត · Capture again"
             : "ប្រើទីតាំងខ្ញុំ · Use my location"}
       </button>
-      <p className="mt-1.5 text-[12px] text-muted">
+      <p className="mt-1.5 text-[14px] text-muted">
         <span className="km">ល្អបំផុត ពេលអ្នកកំពុងនៅក្នុងចម្ការ។ </span>Best done while standing in your farm.
       </p>
       {gps !== "idle" && gps !== "locating" && (
-        <p className="mt-2 rounded-lg bg-warn-soft px-2.5 py-2 text-[13px] text-warn">
+        <p className="mt-2 rounded-lg bg-warn-soft px-2.5 py-2 text-[15px] text-warn">
           <span className="km block">{GPS_MESSAGES[gps].km}</span>
           <span className="block opacity-85">{GPS_MESSAGES[gps].en}</span>
         </p>
       )}
 
-      <p className="mb-2 mt-4 text-[13px] text-muted">
+      <p className="mb-2 mt-4 text-[15px] text-muted">
         <span className="km">ឬជ្រើសខេត្ត</span> · Or pick your province
       </p>
       <div className="flex flex-wrap gap-2">
@@ -117,7 +117,7 @@ export function LocationField({
                 onChange({ lat: p.lat, lon: p.lon, accuracy: null, label: p.km, capturedAt: new Date().toISOString() })
               }
               aria-pressed={selected}
-              className={`km rounded-full border px-3 py-1.5 text-[14px] ${
+              className={`km rounded-full border px-3 py-1.5 text-[15px] ${
                 selected ? "border-brand bg-brand text-brand-ink" : "border-line bg-surface"
               }`}
             >
@@ -126,7 +126,7 @@ export function LocationField({
           );
         })}
       </div>
-      <p className="mt-3 text-[12px] text-muted">
+      <p className="mt-3 text-[14px] text-muted">
         <span className="km">ទីតាំងពិតប្រាកដរក្សាទុកតែក្នុងទូរស័ព្ទនេះ។ សេវាអាកាសធាតុ (Open-Meteo) ទទួលបានតែទីតាំងប្រហាក់ប្រហែល (ប្រហែល ១ គ.ម)។ </span>
         Your exact location stays on this phone. The weather service (Open-Meteo) only gets it rounded to about 1 km.
       </p>

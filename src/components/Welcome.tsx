@@ -19,10 +19,10 @@ export function Welcome({ onFinish }: { onFinish: (account: Account) => void }) 
     <div className="mx-auto flex h-full max-w-lg flex-col overflow-y-auto bg-bg">
       <header className="shrink-0 bg-brand px-6 pb-8 pt-[max(2rem,env(safe-area-inset-top))] text-brand-ink">
         <div className="flex items-center gap-2.5">
-          <img src="/icons/icon.svg" alt="" className="h-11 w-11 shrink-0 rounded-[10px] ring-1 ring-brand-ink/25" />
+          <img src="/icons/icon.svg" alt="" className="h-12 w-11 shrink-0 rounded-[10px] ring-1 ring-brand-ink/25" />
           <div className="leading-tight">
             <p className="km text-[16px] font-semibold">ជំនួយការចន្ទី M23</p>
-            <p className="text-[12px] opacity-80">M23 Cashew Advisor</p>
+            <p className="text-[14px] opacity-80">M23 Cashew Advisor</p>
           </div>
         </div>
         {step !== "register" && (
@@ -40,12 +40,12 @@ export function Welcome({ onFinish }: { onFinish: (account: Account) => void }) 
             <ul className="flex flex-col gap-3.5">
               {FEATURES.map(({ Icon, km, en }) => (
                 <li key={en} className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                  <span className="flex h-12 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
                     <Icon size={20} />
                   </span>
                   <span className="min-w-0">
                     <span className="km block text-[15px] font-medium">{km}</span>
-                    <span className="block text-[12px] text-muted">{en}</span>
+                    <span className="block text-[14px] text-muted">{en}</span>
                   </span>
                 </li>
               ))}
@@ -53,7 +53,7 @@ export function Welcome({ onFinish }: { onFinish: (account: Account) => void }) 
 
             <div className="mt-auto flex flex-col gap-3 pt-8">
               <div className="rounded-xl bg-brand-soft p-3 mb-2">
-                <p className="km text-[14px] font-medium text-brand">
+                <p className="km text-[15px] font-medium text-brand">
                   ចុះឈ្មោះឥឡូវ ទទួលបានគំរោងប្រើថ្នាំពិសេស · Register now, get custom spray calendar
                 </p>
               </div>
@@ -69,7 +69,7 @@ export function Welcome({ onFinish }: { onFinish: (account: Account) => void }) 
               >
                 ប្រើជាភ្ញៀវ · Continue as guest
               </button>
-              <p className="km text-center text-[13px] text-muted">
+              <p className="km text-center text-[15px] text-muted">
                 ឥតគិតថ្លៃ · អាចចុះឈ្មោះពេលក្រោយ · Free, and you can register later
               </p>
             </div>
@@ -79,7 +79,7 @@ export function Welcome({ onFinish }: { onFinish: (account: Account) => void }) 
         {step === "register" && (
           <>
             <h1 className="km text-[22px] font-semibold">ចុះឈ្មោះ</h1>
-            <p className="mb-5 text-[13px] text-muted">
+            <p className="mb-5 text-[15px] text-muted">
               <span className="km">ចុះឈ្មោះ ដើម្បីទទួលដំបូន្មាន និងសេវាពីក្រុមការងារយើង។ </span>Register to get advice and services from our team.
             </p>
             <RegisterForm
@@ -98,12 +98,12 @@ export function Welcome({ onFinish }: { onFinish: (account: Account) => void }) 
           <div className="flex flex-1 flex-col">
             <h1 className="km text-[24px] font-semibold">អរគុណ {registered.name}!</h1>
             <p className="km mt-2 text-[15px]">អ្នកបានចុះឈ្មោះរួចហើយ។ ក្រុមការងារយើងអាចទាក់ទងអ្នកតាមលេខ {registered.phone}។</p>
-            <p className="mt-1 text-[13px] text-muted">You're registered. Our team may contact you on {registered.phone}.</p>
+            <p className="mt-1 text-[15px] text-muted">You're registered. Our team may contact you on {registered.phone}.</p>
 
             {linkingCode && (
               <div className="mt-5 rounded-2xl border border-line bg-surface p-4">
-                <p className="km text-[14px] font-medium">🔗 ភ្ជាក់ជាមួយ Telegram</p>
-                <p className="text-[12px] text-muted">
+                <p className="km text-[15px] font-medium">🔗 ភ្ជាក់ជាមួយ Telegram</p>
+                <p className="text-[14px] text-muted">
                   <span className="km">
                     បើក Telegram ហើយវាយ <b>/link</b> បន្ទាប់មកសូមដាក់លេខនេះ៖
                   </span>{" "}

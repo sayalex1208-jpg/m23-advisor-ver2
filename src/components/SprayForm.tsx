@@ -71,7 +71,7 @@ export function SprayForm({
     >
       <div className="flex items-center justify-between">
         <h3 className="km text-[18px] font-semibold">{initial.products.some((p) => p.name) ? "កែការបាញ់" : "កត់ត្រាការបាញ់"}</h3>
-        <button type="button" onClick={onCancel} className="km text-[14px] text-muted underline">
+        <button type="button" onClick={onCancel} className="km text-[15px] text-muted underline">
           បោះបង់ · Cancel
         </button>
       </div>
@@ -96,7 +96,7 @@ export function SprayForm({
         </div>
         {log.purpose === "insect" && (
           <div className="mt-3">
-            <p className="mb-2 text-[12px] text-muted">
+            <p className="mb-2 text-[14px] text-muted">
               <span className="km">សត្វល្អិតអ្វី?</span> · Which pest?
             </p>
             <div className="flex flex-wrap gap-2">
@@ -127,13 +127,13 @@ export function SprayForm({
                   onChange={(e) => setProduct(i, { name: e.target.value })}
                   placeholder="ឈ្មោះថ្នាំ ឧ. Imidacloprid"
                   aria-label="ឈ្មោះថ្នាំ · Product or active ingredient"
-                  className="km h-11 min-w-0 flex-1 rounded-lg border border-line bg-bg px-3 text-[16px] outline-none focus:border-brand"
+                  className="km h-12 min-w-0 flex-1 rounded-lg border border-line bg-bg px-3 text-[16px] outline-none focus:border-brand"
                 />
                 {log.products.length > 1 && (
                   <button
                     type="button"
                     onClick={() => set({ products: log.products.filter((_, j) => j !== i) })}
-                    className="h-11 shrink-0 px-2 text-[13px] text-muted underline"
+                    className="h-12 shrink-0 px-2 text-[15px] text-muted underline"
                     aria-label="លុបថ្នាំនេះ · Remove this product"
                   >
                     លុប
@@ -146,10 +146,10 @@ export function SprayForm({
                 onChange={(e) => setProduct(i, { dose: e.target.value })}
                 placeholder="កម្រិត ឧ. ១ លីត្រ / ទឹក ១០០០ លីត្រ"
                 aria-label="កម្រិតថ្នាំ · Dose"
-                className="km mt-2 h-11 w-full rounded-lg border border-line bg-bg px-3 text-[16px] outline-none focus:border-brand"
+                className="km mt-2 h-12 w-full rounded-lg border border-line bg-bg px-3 text-[16px] outline-none focus:border-brand"
               />
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                <span className="text-[12px] text-muted">
+                <span className="text-[14px] text-muted">
                   <span className="km">ទម្រង់</span> · Type:
                 </span>
                 {FORMULATIONS.map((f) => (
@@ -158,7 +158,7 @@ export function SprayForm({
                     type="button"
                     onClick={() => setProduct(i, { formulation: p.formulation === f ? "" : f })}
                     aria-pressed={p.formulation === f}
-                    className={`rounded-md border px-2 py-1 text-[12px] ${
+                    className={`rounded-md border px-2 py-1 text-[14px] ${
                       p.formulation === f ? "border-brand bg-brand text-brand-ink" : "border-line"
                     }`}
                   >
@@ -172,7 +172,7 @@ export function SprayForm({
             <button
               type="button"
               onClick={() => set({ products: [...log.products, { name: "", dose: "", formulation: "" }] })}
-              className="km h-11 rounded-xl border border-dashed border-brand text-[14px] text-brand"
+              className="km h-12 rounded-xl border border-dashed border-brand text-[15px] text-brand"
             >
               + បន្ថែមថ្នាំ · Add product
             </button>
@@ -191,7 +191,7 @@ export function SprayForm({
           placeholder="៛"
           className="h-12 w-full rounded-xl border border-line bg-surface px-3.5 text-[16px] tabular-nums outline-none focus:border-brand"
         />
-        <p className="mt-1 text-[12px] text-muted">
+        <p className="mt-1 text-[14px] text-muted">
           <span className="km">ប្រាក់រៀល សម្រាប់ថ្នាំ ឬជីក្នុងធុង។ បូកចូលចំណាយរដូវ ក្នុង «ផល និងលក់»។</span> Riel for the products
           in the tank. Added to season costs in Harvest.
         </p>
@@ -222,8 +222,8 @@ export function SprayForm({
         {suggestion && (
           <div className="mb-3 rounded-xl bg-brand-soft p-3">
             <button type="button" onClick={() => setShowRule(!showRule)} className="w-full text-left" aria-expanded={showRule}>
-              <span className="km block text-[14px]">សៀវភៅ៖ {suggestion.km}</span>
-              <span className="block text-[12px] text-muted">Book: {suggestion.en}</span>
+              <span className="km block text-[15px]">សៀវភៅ៖ {suggestion.km}</span>
+              <span className="block text-[14px] text-muted">Book: {suggestion.en}</span>
             </button>
             {showRule && (
               <div className="mt-2 border-t border-brand/20 pt-2">
@@ -263,14 +263,14 @@ export function SprayForm({
           />
         )}
         {nextDate && (
-          <p className="km mt-2 text-[14px] text-brand">
-            រំលឹក៖ {formatDate(nextDate).km} <span className="text-[12px] text-muted">· Reminder {formatDate(nextDate).en}</span>
+          <p className="km mt-2 text-[15px] text-brand">
+            រំលឹក៖ {formatDate(nextDate).km} <span className="text-[14px] text-muted">· Reminder {formatDate(nextDate).en}</span>
           </p>
         )}
         {!nextChosen && (
-          <p className="km mt-2 text-[14px] text-warn">
+          <p className="km mt-2 text-[15px] text-warn">
             ជ្រើសថ្ងៃបាញ់ម្ដងទៀត ឬចុច «មិនបាញ់ទៀត»។{" "}
-            <span className="text-[12px]">· Pick when to spray again, or "no more", to save.</span>
+            <span className="text-[14px]">· Pick when to spray again, or "no more", to save.</span>
           </p>
         )}
       </Block>
@@ -278,7 +278,7 @@ export function SprayForm({
       {checks.length > 0 && (
         <div className="flex flex-col gap-2">
           {checks.map((c) => (
-            <p key={c.entry} className="flex gap-2 rounded-xl bg-warn-soft px-3 py-2.5 text-[13px] text-warn">
+            <p key={c.entry} className="flex gap-2 rounded-xl bg-warn-soft px-3 py-2.5 text-[15px] text-warn">
               <AlertIcon size={16} className="mt-1 shrink-0" />
               <span>
                 <span className="km block">{c.km}</span>
@@ -300,18 +300,18 @@ export function SprayForm({
       {onDelete &&
         (confirmDelete ? (
           <div className="flex items-center justify-between gap-2 rounded-xl border border-danger/30 px-3 py-2.5">
-            <span className="km text-[14px] text-danger">លុបកំណត់ត្រានេះ? · Delete this record?</span>
+            <span className="km text-[15px] text-danger">លុបកំណត់ត្រានេះ? · Delete this record?</span>
             <span className="flex gap-2">
-              <button type="button" onClick={onDelete} className="km rounded-lg bg-danger px-3 py-1.5 text-[14px] text-white">
+              <button type="button" onClick={onDelete} className="km rounded-lg bg-danger px-3 py-1.5 text-[15px] text-white">
                 លុប
               </button>
-              <button type="button" onClick={() => setConfirmDelete(false)} className="km rounded-lg border border-line px-3 py-1.5 text-[14px]">
+              <button type="button" onClick={() => setConfirmDelete(false)} className="km rounded-lg border border-line px-3 py-1.5 text-[15px]">
                 ទេ
               </button>
             </span>
           </div>
         ) : (
-          <button type="button" onClick={() => setConfirmDelete(true)} className="km text-[14px] text-danger underline">
+          <button type="button" onClick={() => setConfirmDelete(true)} className="km text-[15px] text-danger underline">
             លុបកំណត់ត្រានេះ · Delete this record
           </button>
         ))}
@@ -323,7 +323,7 @@ function Block({ km, en, children }: { km: string; en: string; children: React.R
   return (
     <section>
       <h4 className="km text-[15px] font-semibold">{km}</h4>
-      <p className="mb-2 text-[12px] text-muted">{en}</p>
+      <p className="mb-2 text-[14px] text-muted">{en}</p>
       {children}
     </section>
   );
@@ -335,7 +335,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`km rounded-full border px-3.5 py-2 text-[14px] ${
+      className={`km rounded-full border px-3.5 py-2 text-[15px] ${
         active ? "border-brand bg-brand text-brand-ink" : "border-line bg-surface"
       }`}
     >

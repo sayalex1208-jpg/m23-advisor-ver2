@@ -46,7 +46,7 @@ export function HarvestForm({
     >
       <div className="flex items-center justify-between">
         <h3 className="km text-[18px] font-semibold">{onDelete ? "កែការលក់" : "កត់ត្រាការលក់"}</h3>
-        <button type="button" onClick={onCancel} className="km text-[14px] text-muted underline">
+        <button type="button" onClick={onCancel} className="km text-[15px] text-muted underline">
           បោះបង់ · Cancel
         </button>
       </div>
@@ -69,7 +69,7 @@ export function HarvestForm({
               type="button"
               onClick={() => set({ state: s })}
               aria-pressed={sale.state === s}
-              className={`km rounded-full border px-3.5 py-2 text-[14px] ${
+              className={`km rounded-full border px-3.5 py-2 text-[15px] ${
                 sale.state === s ? "border-brand bg-brand text-brand-ink" : "border-line bg-surface"
               }`}
             >
@@ -111,7 +111,7 @@ export function HarvestForm({
       {canSave && (
         <p className="rounded-xl bg-brand-soft px-3.5 py-2.5">
           <span className="km block text-[15px] font-semibold text-brand">សរុប {riel(total).km}</span>
-          <span className="block text-[12px] text-muted tabular-nums">
+          <span className="block text-[14px] text-muted tabular-nums">
             Total {riel(total).en} {usd(total)}
           </span>
         </p>
@@ -131,7 +131,7 @@ export function HarvestForm({
           placeholder="ឧ. ឈ្មួញភូមិ ឬរោងចក្រ"
           className="km h-12 w-full rounded-xl border border-line bg-surface px-3.5 text-[16px] outline-none focus:border-brand"
         />
-        <p className="mt-1.5 text-[12px] text-muted">
+        <p className="mt-1.5 text-[14px] text-muted">
           <span className="km">ធនាគារ និងអ្នកទិញ ជឿជាងនៅពេលមានឈ្មោះអ្នកទិញ។</span> Banks and buyers trust records with a buyer
           named.
         </p>
@@ -148,7 +148,7 @@ export function HarvestForm({
           placeholder="ឧ. 160"
           className="h-12 w-32 rounded-xl border border-line bg-surface px-3.5 text-[16px] tabular-nums outline-none focus:border-brand"
         />
-        <p className="mt-1.5 text-[12px] text-muted">
+        <p className="mt-1.5 text-[14px] text-muted">
           <span className="km">គ្រាប់តិចក្នុង ១ គ.ក្រ = គ្រាប់ធំ តម្លៃល្អ។</span> Fewer nuts per kg means bigger nuts.
         </p>
       </Block>
@@ -175,18 +175,18 @@ export function HarvestForm({
       {onDelete &&
         (confirmDelete ? (
           <div className="flex items-center justify-between gap-2 rounded-xl border border-danger/30 px-3 py-2.5">
-            <span className="km text-[14px] text-danger">លុបការលក់ {formatDate(sale.date).km}? · Delete?</span>
+            <span className="km text-[15px] text-danger">លុបការលក់ {formatDate(sale.date).km}? · Delete?</span>
             <span className="flex gap-2">
-              <button type="button" onClick={onDelete} className="km rounded-lg bg-danger px-3 py-1.5 text-[14px] text-white">
+              <button type="button" onClick={onDelete} className="km rounded-lg bg-danger px-3 py-1.5 text-[15px] text-white">
                 លុប
               </button>
-              <button type="button" onClick={() => setConfirmDelete(false)} className="km rounded-lg border border-line px-3 py-1.5 text-[14px]">
+              <button type="button" onClick={() => setConfirmDelete(false)} className="km rounded-lg border border-line px-3 py-1.5 text-[15px]">
                 ទេ
               </button>
             </span>
           </div>
         ) : (
-          <button type="button" onClick={() => setConfirmDelete(true)} className="km text-[14px] text-danger underline">
+          <button type="button" onClick={() => setConfirmDelete(true)} className="km text-[15px] text-danger underline">
             លុបកំណត់ត្រានេះ · Delete this record
           </button>
         ))}
@@ -198,7 +198,7 @@ function Block({ km, en, children }: { km: string; en: string; children: React.R
   return (
     <section className="min-w-0">
       <h4 className="km text-[15px] font-semibold">{km}</h4>
-      <p className="mb-2 text-[12px] text-muted">{en}</p>
+      <p className="mb-2 text-[14px] text-muted">{en}</p>
       {children}
     </section>
   );

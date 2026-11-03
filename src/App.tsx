@@ -56,20 +56,20 @@ export function App() {
   return (
     <div className="mx-auto flex h-full max-w-lg flex-col bg-bg pt-[env(safe-area-inset-top)]">
       <header className="flex shrink-0 items-center gap-2.5 border-b border-line bg-surface px-4 py-3">
-        <img src="/icons/icon.svg" alt="" className="h-9 w-9 shrink-0" />
+        <img src="/icons/icon.svg" alt="" className="h-12 w-9 shrink-0" />
         <div className="min-w-0 flex-1 leading-tight">
           <h1 className="km text-[16px] font-semibold">ជំនួយការចន្ទី M23</h1>
-          <p className="text-[12px] text-muted">M23 Cashew Advisor</p>
+          <p className="text-[14px] text-muted">M23 Cashew Advisor</p>
         </div>
         {install.canInstall && (
-          <button onClick={install.install} className="km shrink-0 rounded-lg border border-brand px-3 py-1.5 text-[13px] text-brand">
+          <button onClick={install.install} className="km shrink-0 rounded-lg border border-brand px-3 py-1.5 text-[15px] text-brand">
             ដំឡើង · Install
           </button>
         )}
       </header>
 
       {isDemo() && (
-        <div className="flex shrink-0 items-center gap-2 bg-warn px-4 py-1.5 text-[12px] text-white">
+        <div className="flex shrink-0 items-center gap-2 bg-warn px-4 py-1.5 text-[14px] text-white">
           <p className="km min-w-0 flex-1 font-medium">ការបង្ហាញ · Demo with a sample farmer</p>
           <button onClick={resetDemo} className="km shrink-0 rounded-md bg-white/20 px-2.5 py-1">
             ចាប់ផ្ដើមថ្មី · Reset
@@ -80,12 +80,12 @@ export function App() {
         </div>
       )}
       {!online && (
-        <p className="km shrink-0 bg-warn-soft px-4 py-1.5 text-center text-[12px] text-warn">
+        <p className="km shrink-0 bg-warn-soft px-4 py-1.5 text-center text-[14px] text-warn">
           គ្មានអ៊ីនធឺណិត — មគ្គុទ្ទេសក៍ ការងារខែនេះ និងចម្លើយពីសៀវភៅ នៅតែប្រើបាន · Offline: the Guide, tasks and book answers still work
         </p>
       )}
       {install.inAppHint && (
-        <div className="flex shrink-0 items-start gap-2 border-b border-line bg-brand-soft px-4 py-2 text-[12px]">
+        <div className="flex shrink-0 items-start gap-2 border-b border-line bg-brand-soft px-4 py-2 text-[14px]">
           <div className="min-w-0 flex-1">
             {install.inAppHint.ios ? (
               <p>
@@ -99,7 +99,7 @@ export function App() {
               </p>
             )}
             {install.inAppHint.chromeUrl && (
-              <a href={install.inAppHint.chromeUrl} className="km mt-1.5 inline-block rounded-lg bg-brand px-3 py-1.5 text-[13px] text-brand-ink">
+              <a href={install.inAppHint.chromeUrl} className="km mt-1.5 inline-block rounded-lg bg-brand px-3 py-1.5 text-[15px] text-brand-ink">
                 បើកក្នុង Chrome · Open in Chrome
               </a>
             )}
@@ -110,7 +110,7 @@ export function App() {
         </div>
       )}
       {install.showIosHint && (
-        <div className="flex shrink-0 items-start gap-2 border-b border-line bg-brand-soft px-4 py-2 text-[12px]">
+        <div className="flex shrink-0 items-start gap-2 border-b border-line bg-brand-soft px-4 py-2 text-[14px]">
           <p className="min-w-0 flex-1">
             <span className="km block">ដាក់កម្មវិធីលើអេក្រង់ដើម៖ ចុច Share រួចជ្រើស "Add to Home Screen"។</span>
             <span className="text-muted">Add to your home screen: tap Share, then "Add to Home Screen".</span>
@@ -175,8 +175,8 @@ export function App() {
                 <span className="absolute -right-1 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-surface bg-danger" />
               )}
             </span>
-            <span className="km text-[12px] font-medium leading-tight">{km}</span>
-            <span className="text-[10px] leading-tight">{en}</span>
+            <span className="km text-[14px] font-medium leading-tight">{km}</span>
+            <span className="text-[12px] leading-tight">{en}</span>
           </button>
         ))}
       </nav>

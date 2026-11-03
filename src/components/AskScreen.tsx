@@ -220,7 +220,7 @@ export function AskScreen({
     <div className="flex h-full min-h-0 flex-col">
       {messages.length > 0 && (
         <div className="flex shrink-0 justify-end border-b border-line px-4 py-1.5">
-          <button onClick={newChat} disabled={busy} className="km text-[13px] text-brand underline disabled:opacity-40">
+          <button onClick={newChat} disabled={busy} className="km text-[15px] text-brand underline disabled:opacity-40">
             សំណួរថ្មី · New chat
           </button>
         </div>
@@ -310,15 +310,15 @@ export function AskScreen({
           )}
         </div>
         {dictation.listening && (
-          <p className="km mt-1.5 text-center text-[13px] text-danger">កំពុងស្ដាប់… និយាយសំណួររបស់អ្នក · Listening… say your question</p>
+          <p className="km mt-1.5 text-center text-[15px] text-danger">កំពុងស្ដាប់… និយាយសំណួររបស់អ្នក · Listening… say your question</p>
         )}
         {dictation.error && !dictation.listening && (
-          <p className="mt-1.5 text-center text-[12px] text-warn">
+          <p className="mt-1.5 text-center text-[14px] text-warn">
             <span className="km">{LISTEN_ERRORS[dictation.error].km}</span> {LISTEN_ERRORS[dictation.error].en}
           </p>
         )}
         {!online && (
-          <p className="km mt-1.5 text-center text-[12px] text-warn">
+          <p className="km mt-1.5 text-center text-[14px] text-warn">
             គ្មានអ៊ីនធឺណិត — មគ្គុទ្ទេសក៍អាចឆ្លើយពីសៀវភៅ ប៉ុន្តែមិនអាចពិនិត្យរូបភាព · Offline — answers from book only, no photo checks
           </p>
         )}
@@ -341,30 +341,30 @@ function Welcome({ onPick, ai }: { onPick: (q: string) => void; ai: boolean | nu
         <p className="km mt-1 text-[15px]">
           ចម្លើយផ្អែកលើសៀវភៅបច្ចេកទេសដាំចន្ទី។ ថតរូបស្លឹក ផ្កា ឬផ្លែ ដើម្បីរកបញ្ហា ៨ប្រភេទដែលមានក្នុងសៀវភៅ។
         </p>
-        <p className="mt-1 text-[13px] text-muted">
+        <p className="mt-1 text-[15px] text-muted">
           Answers come from a Khmer cashew-growing guidebook. Take a photo to check for 8 documented pests and diseases.
         </p>
         {canListen && (
           <p className="mt-3 flex items-center gap-2.5 border-t border-brand/20 pt-2.5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-brand-ink">
+            <span className="flex h-12 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-brand-ink">
               <MicIcon size={18} />
             </span>
-            <span className="text-[13px] text-muted">
-              <span className="km block text-[14px] text-ink">មិនចង់វាយ? ចុចមីក្រូហ្វូន ហើយនិយាយ។ ចម្លើយនឹងអានឲ្យស្ដាប់។</span>
+            <span className="text-[15px] text-muted">
+              <span className="km block text-[15px] text-ink">មិនចង់វាយ? ចុចមីក្រូហ្វូន ហើយនិយាយ។ ចម្លើយនឹងអានឲ្យស្ដាប់។</span>
               Don't want to type? Tap the mic and speak. The answer is read aloud.
             </span>
           </p>
         )}
         {voiceMissing && (
-          <p className="mt-3 border-t border-brand/20 pt-2.5 text-[12px] text-muted">
-            <span className="km block text-[13px] text-ink">
+          <p className="mt-3 border-t border-brand/20 pt-2.5 text-[14px] text-muted">
+            <span className="km block text-[15px] text-ink">
               ដើម្បីស្ដាប់ចម្លើយជាសំឡេង សូមដំឡើងសំឡេងខ្មែរ ក្នុងការកំណត់ទូរស័ព្ទ៖ Text-to-speech → Speech Services by Google។
             </span>
             To hear answers read aloud, add the Khmer voice in your phone's Text-to-speech settings (Speech Services by Google).
           </p>
         )}
         {ai === false && (
-          <p className="mt-3 border-t border-brand/20 pt-2.5 text-[13px] text-muted">
+          <p className="mt-3 border-t border-brand/20 pt-2.5 text-[15px] text-muted">
             <span className="km block text-ink">ឥឡូវនេះ ចម្លើយមកពីសៀវភៅផ្ទាល់។ ការពិនិត្យរូបភាពដោយ AI ឆាប់ៗនេះ។</span>
             Answers come straight from the book for now. AI photo checks are coming soon.
           </p>
@@ -375,7 +375,7 @@ function Welcome({ onPick, ai }: { onPick: (q: string) => void; ai: boolean | nu
         <h3 className="km text-[15px] font-semibold">
           ខែ{KHMER_MONTHS[month - 1]} ({toKhmerDigits(month)}) · {season.km}
         </h3>
-        <p className="mb-2 text-[12px] text-muted">Questions for this month · {season.en}</p>
+        <p className="mb-2 text-[14px] text-muted">Questions for this month · {season.en}</p>
         <div className="flex flex-col gap-2">
           {season.questions.slice(0, 4).map((e) => (
             <button
@@ -384,7 +384,7 @@ function Welcome({ onPick, ai }: { onPick: (q: string) => void; ai: boolean | nu
               className="rounded-xl border border-line bg-surface px-3.5 py-3 text-left active:bg-brand-soft"
             >
               <span className="km block text-[15px]">{e.q_km}</span>
-              <span className="block text-[12px] text-muted">{e.q_en}</span>
+              <span className="block text-[14px] text-muted">{e.q_en}</span>
             </button>
           ))}
         </div>
@@ -405,7 +405,7 @@ function MessageView({ id, msg, onRate }: { id: string; msg: Message; onRate: (r
       return msg.url ? (
         <img src={msg.url} alt="រូបដែលអ្នកបានផ្ញើ · Your photo" className="max-h-64 max-w-[70%] self-end rounded-2xl object-cover" />
       ) : (
-        <p className="km self-end rounded-2xl bg-brand px-3.5 py-2.5 text-[14px] text-brand-ink opacity-80">រូបភាព · Photo</p>
+        <p className="km self-end rounded-2xl bg-brand px-3.5 py-2.5 text-[15px] text-brand-ink opacity-80">រូបភាព · Photo</p>
       );
     case "answer":
       return (
@@ -413,7 +413,7 @@ function MessageView({ id, msg, onRate }: { id: string; msg: Message; onRate: (r
           <ListenButton id={id} text={msg.reply.reply_km} className="mb-2" />
           <p className="km whitespace-pre-line text-[16px]">{msg.reply.reply_km}</p>
           {msg.reply.gloss_en && (
-            <p className="mt-2 border-t border-line pt-2 text-[13px] text-muted">{msg.reply.gloss_en}</p>
+            <p className="mt-2 border-t border-line pt-2 text-[15px] text-muted">{msg.reply.gloss_en}</p>
           )}
           <Sources ids={msg.reply.sources} />
           <Feedback rated={msg.rated} onRate={onRate} />
@@ -423,9 +423,9 @@ function MessageView({ id, msg, onRate }: { id: string; msg: Message; onRate: (r
       return <DiagnosisCard id={id} d={msg.result} rated={msg.rated} onRate={onRate} />;
     case "error":
       return (
-        <p className="max-w-[92%] self-start rounded-2xl border border-danger/30 px-3.5 py-2.5 text-[14px] text-danger">
+        <p className="max-w-[92%] self-start rounded-2xl border border-danger/30 px-3.5 py-2.5 text-[15px] text-danger">
           <span className="km block">{ERROR_COPY[msg.code].km}</span>
-          <span className="block text-[12px] opacity-85">{ERROR_COPY[msg.code].en}</span>
+          <span className="block text-[14px] opacity-85">{ERROR_COPY[msg.code].en}</span>
         </p>
       );
   }

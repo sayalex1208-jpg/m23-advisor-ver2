@@ -66,14 +66,14 @@ export function GuideScreen({ onAsk }: { onAsk: (question: string) => void }) {
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
-        <p className="km pt-3 text-[13px] text-muted">
+        <p className="km pt-3 text-[15px] text-muted">
           {toKhmerDigits(count)} ចម្លើយពីសៀវភៅ · {count} answers from the book
         </p>
 
         {visible.length === 0 && (
           <div className="mt-6 rounded-2xl border border-line bg-surface p-4 text-center">
             <p className="km text-[15px]">រកមិនឃើញក្នុងសៀវភៅទេ។</p>
-            <p className="text-[13px] text-muted">Nothing in the book matches.</p>
+            <p className="text-[15px] text-muted">Nothing in the book matches.</p>
             {query.trim() && (
               <button
                 onClick={() => onAsk(query.trim())}
@@ -89,7 +89,7 @@ export function GuideScreen({ onAsk }: { onAsk: (question: string) => void }) {
           <section key={s.key} className="mt-4">
             <h2 className="sticky top-0 z-10 -mx-4 bg-bg px-4 py-2">
               <span className="km block text-[16px] font-semibold">{s.km}</span>
-              <span className="block text-[12px] text-muted">{s.en}</span>
+              <span className="block text-[14px] text-muted">{s.en}</span>
             </h2>
             <div className="flex flex-col gap-2">
               {s.entries.map((e) => (
@@ -114,7 +114,7 @@ function Chip({ active, onClick, label }: { active: boolean; onClick: () => void
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`km shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-[14px] ${
+      className={`km shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-[15px] ${
         active ? "border-brand bg-brand text-brand-ink" : "border-line bg-surface text-ink"
       }`}
     >
@@ -138,7 +138,7 @@ function EntryCard({
     <article className="rounded-xl border border-line bg-surface">
       <button onClick={onToggle} aria-expanded={open} className="w-full px-3.5 py-3 text-left">
         <span className="km block text-[15px] font-medium">{e.q_km}</span>
-        <span className="block text-[12px] text-muted">{e.q_en}</span>
+        <span className="block text-[14px] text-muted">{e.q_en}</span>
       </button>
       {open && (
         <div className="border-t border-line px-3.5 pb-3.5 pt-3">

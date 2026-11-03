@@ -55,27 +55,27 @@ export function FarmPassport({
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      <button onClick={onBack} className="km self-start text-[14px] text-muted underline">
+      <button onClick={onBack} className="km self-start text-[15px] text-muted underline">
         ‹ ត្រឡប់ · Back to harvest log
       </button>
 
       <article className="overflow-hidden rounded-2xl border border-line bg-surface">
         <header className="bg-brand px-4 py-4 text-brand-ink">
-          <p className="text-[11px] font-semibold uppercase tracking-wider opacity-85">M23 Cashew Advisor · Farm passport</p>
+          <p className="text-[13px] font-semibold uppercase tracking-wider opacity-85">M23 Cashew Advisor · Farm passport</p>
           <h3 className="km mt-1 text-[22px] font-semibold leading-snug">{name ?? "កសិករចន្ទី M23"}</h3>
-          <p className="text-[13px] opacity-90 tabular-nums">
+          <p className="text-[15px] opacity-90 tabular-nums">
             {account.status === "registered" ? account.phone : "Cashew farmer (guest)"}
             {farm.village && ` · ${farm.village}`}
           </p>
         </header>
 
         {account.status !== "registered" && (
-          <p className="flex items-center justify-between gap-2 bg-warn-soft px-4 py-2.5 text-[12px] text-warn">
+          <p className="flex items-center justify-between gap-2 bg-warn-soft px-4 py-2.5 text-[14px] text-warn">
             <span>
               <span className="km block">ចុះឈ្មោះ ដើម្បីដាក់ឈ្មោះ និងលេខទូរស័ព្ទរបស់អ្នក។</span>
               Register to put your name and phone on it.
             </span>
-            <button onClick={onRegister} className="km shrink-0 rounded-lg bg-warn px-3 py-1.5 text-[13px] text-white">
+            <button onClick={onRegister} className="km shrink-0 rounded-lg bg-warn px-3 py-1.5 text-[15px] text-white">
               ចុះឈ្មោះ
             </button>
           </p>
@@ -103,16 +103,16 @@ export function FarmPassport({
 
         <Section km="ផល និងចំណូល" en="Yield and income">
           {withSales.length === 0 ? (
-            <p className="text-[13px] text-muted">
+            <p className="text-[15px] text-muted">
               <span className="km block">មិនទាន់មានការលក់ទេ។ កត់ត្រាការលក់ក្នុងផ្ទាំង ផល និងលក់។</span>
               No sales logged yet. Add them in the harvest log.
             </p>
           ) : (
             <>
               <div className="-mx-4 overflow-x-auto px-4">
-                <table className="w-full min-w-[22rem] text-[13px] tabular-nums">
+                <table className="w-full min-w-[22rem] text-[15px] tabular-nums">
                   <thead>
-                    <tr className="text-left text-[11px] text-muted">
+                    <tr className="text-left text-[13px] text-muted">
                       <th className="py-1 pr-2 font-medium">Season</th>
                       <th className="py-1 pr-2 text-right font-medium">kg</th>
                       {farm.hectares ? <th className="py-1 pr-2 text-right font-medium">kg/ha</th> : null}
@@ -137,12 +137,12 @@ export function FarmPassport({
                   </tbody>
                 </table>
               </div>
-              <p className="mt-2 text-[12px] text-muted">
+              <p className="mt-2 text-[14px] text-muted">
                 Income and profit in riel (M = million). Profit is shown when season costs were entered.
               </p>
               <p className="mt-3 rounded-xl bg-brand-soft px-3 py-2.5">
-                <span className="km block text-[14px] font-semibold text-brand">ចំណូលមធ្យមក្នុងមួយរដូវ {riel(avgIncome).km}</span>
-                <span className="block text-[12px] text-muted tabular-nums">
+                <span className="km block text-[15px] font-semibold text-brand">ចំណូលមធ្យមក្នុងមួយរដូវ {riel(avgIncome).km}</span>
+                <span className="block text-[14px] text-muted tabular-nums">
                   Average income per season {riel(avgIncome).en} {usd(avgIncome)} · {withSales.length}{" "}
                   {withSales.length === 1 ? "season" : "seasons"}
                 </span>
@@ -153,18 +153,18 @@ export function FarmPassport({
 
         <Section km="ការបាញ់ថ្នាំ ១២ ខែចុងក្រោយ" en="Spraying, last 12 months">
           {recentSprays.length === 0 ? (
-            <p className="text-[13px] text-muted">No sprays logged.</p>
+            <p className="text-[15px] text-muted">No sprays logged.</p>
           ) : (
             <>
-              <p className="km text-[14px]">
+              <p className="km text-[15px]">
                 បាញ់ {kh(recentSprays.length)} ដង · <span className="text-muted">{count(recentSprays.length, "spray")} logged</span>
               </p>
-              <p className="mt-1 text-[13px] text-muted">{products.join(", ")}</p>
+              <p className="mt-1 text-[15px] text-muted">{products.join(", ")}</p>
             </>
           )}
         </Section>
 
-        <footer className="border-t border-line px-4 py-3 text-[11px] leading-relaxed text-muted">
+        <footer className="border-t border-line px-4 py-3 text-[13px] leading-relaxed text-muted">
           <p>
             <span className="km">កសិករកត់ត្រាដោយខ្លួនឯង មិនទាន់ផ្ទៀងផ្ទាត់។ </span>
             Self-reported by the farmer, not verified.
@@ -178,11 +178,11 @@ export function FarmPassport({
         ចែករំលែក · Share (Telegram, Messenger…)
       </button>
       {shared && (
-        <p className="km text-center text-[13px] text-muted">
+        <p className="km text-center text-[15px] text-muted">
           {shared === "copied" ? "បានចម្លង។ បិទភ្ជាប់ក្នុង Telegram។ · Copied. Paste it in Telegram." : "ចែករំលែកមិនបាន។ · Couldn't share."}
         </p>
       )}
-      <p className="text-[12px] text-muted">
+      <p className="text-[14px] text-muted">
         <span className="km">ព័ត៌មាននេះនៅតែក្នុងទូរស័ព្ទ រហូតដល់អ្នកចុច ចែករំលែក។ </span>
         This stays on your phone until you tap Share. You choose who sees it.
       </p>
@@ -246,8 +246,8 @@ function passportText({
 function Section({ km, en, children }: { km: string; en: string; children: React.ReactNode }) {
   return (
     <section className="border-t border-line px-4 py-3.5 first-of-type:border-t-0">
-      <h4 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-brand">
-        <span className="km normal-case text-[13px] tracking-normal">{km}</span> · {en}
+      <h4 className="mb-2.5 text-[13px] font-semibold uppercase tracking-wider text-brand">
+        <span className="km normal-case text-[15px] tracking-normal">{km}</span> · {en}
       </h4>
       {children}
     </section>
@@ -257,11 +257,11 @@ function Section({ km, en, children }: { km: string; en: string; children: React
 function Row({ km, en, value, sub, wide }: { km: string; en: string; value: string; sub: string; wide?: boolean }) {
   return (
     <div className={`min-w-0 ${wide ? "col-span-2" : ""}`}>
-      <dt className="text-[11px] text-muted">
+      <dt className="text-[13px] text-muted">
         <span className="km">{km}</span> · {en}
       </dt>
       <dd className="km text-[15px] font-medium">{value}</dd>
-      <dd className="text-[11px] text-muted">{sub}</dd>
+      <dd className="text-[13px] text-muted">{sub}</dd>
     </div>
   );
 }

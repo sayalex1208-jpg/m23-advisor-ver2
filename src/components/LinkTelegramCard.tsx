@@ -51,7 +51,7 @@ export function LinkTelegramCard({ phone }: { phone: string }) {
     return (
       <section className="mb-6 rounded-2xl bg-brand-soft p-4">
         <p className="km text-[15px] font-medium text-brand">✅ បានភ្ជាក់ជាមួយ Telegram រួចហើយ</p>
-        <p className="text-[12px] text-muted">
+        <p className="text-[14px] text-muted">
           Linked to Telegram. Your farm records now show in both places.
         </p>
       </section>
@@ -62,7 +62,7 @@ export function LinkTelegramCard({ phone }: { phone: string }) {
     return (
       <section className="mb-6 rounded-2xl border border-line bg-surface p-4">
         <p className="km text-[15px] font-medium">🔗 ភ្ជាក់ជាមួយ Telegram</p>
-        <p className="text-[12px] text-muted">
+        <p className="text-[14px] text-muted">
           <span className="km">
             បើក Telegram ហើយចុច /start ដើម្បីបានលេខ ៤ ដង រួចយកលេខនោះមកដាក់នៅទីនេះ។
           </span>{" "}
@@ -70,7 +70,7 @@ export function LinkTelegramCard({ phone }: { phone: string }) {
         </p>
         <button
           onClick={() => setOpen(true)}
-          className="km mt-3 h-11 rounded-xl bg-brand px-4 text-[15px] text-brand-ink"
+          className="km mt-3 h-12 rounded-xl bg-brand px-4 text-[15px] text-brand-ink"
         >
           ភ្ជាក់ · Link Telegram
         </button>
@@ -83,7 +83,7 @@ export function LinkTelegramCard({ phone }: { phone: string }) {
   return (
     <section className="mb-6 rounded-2xl border border-line bg-surface p-4">
       <p className="km text-[15px] font-medium">🔗 ភ្ជាក់ជាមួយ Telegram</p>
-      <p className="text-[12px] text-muted">
+      <p className="text-[14px] text-muted">
         <span className="km">បញ្ចូលលេខកូដ ៤ ដងពី Telegram។</span> Enter the 4-digit code from Telegram.
       </p>
       <div className="mt-3 flex gap-2">
@@ -118,13 +118,13 @@ export function LinkTelegramCard({ phone }: { phone: string }) {
       </div>
 
       {error && (
-        <p className="mt-2 rounded-lg bg-warn-soft px-3 py-2 text-[13px] text-warn">
+        <p className="mt-2 rounded-lg bg-warn-soft px-3 py-2 text-[15px] text-warn">
           <span className="km block">{ERRORS[error].km}</span>
           <span className="block opacity-85">{ERRORS[error].en}</span>
         </p>
       )}
 
-      <button onClick={() => setOpen(false)} className="km mt-2 text-[13px] text-muted underline">
+      <button onClick={() => setOpen(false)} className="km mt-2 text-[15px] text-muted underline">
         បិទ · Close
       </button>
     </section>

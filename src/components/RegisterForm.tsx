@@ -85,15 +85,15 @@ export function RegisterForm({
           className="mt-1 h-5 w-5 shrink-0 accent-[var(--brand)]"
         />
         <span>
-          <span className="km block text-[14px]">ខ្ញុំយល់ព្រមឲ្យក្រុមការងារ M23 Cashew Advisor ទាក់ទងខ្ញុំតាមទូរស័ព្ទ អំពីដំបូន្មាន និងសេវាដាំចន្ទី។</span>
-          <span className="block text-[12px] text-muted">
+          <span className="km block text-[15px]">ខ្ញុំយល់ព្រមឲ្យក្រុមការងារ M23 Cashew Advisor ទាក់ទងខ្ញុំតាមទូរស័ព្ទ អំពីដំបូន្មាន និងសេវាដាំចន្ទី។</span>
+          <span className="block text-[14px] text-muted">
             I agree that the M23 Cashew Advisor team may contact me by phone about cashew advice and services.
           </span>
         </span>
       </label>
 
       {error && (
-        <p className="rounded-lg bg-warn-soft px-3 py-2 text-[13px] text-warn">
+        <p className="rounded-lg bg-warn-soft px-3 py-2 text-[15px] text-warn">
           <span className="km block">{ERRORS[error].km}</span>
           <span className="block opacity-85">{ERRORS[error].en}</span>
         </p>
@@ -106,10 +106,10 @@ export function RegisterForm({
       >
         {busy ? "កំពុងចុះឈ្មោះ… · Registering…" : "ចុះឈ្មោះ · Register"}
       </button>
-      <button type="button" onClick={onCancel} className="km text-[14px] text-muted underline">
+      <button type="button" onClick={onCancel} className="km text-[15px] text-muted underline">
         {cancelLabel.km} · {cancelLabel.en}
       </button>
-      <p className="text-[12px] text-muted">
+      <p className="text-[14px] text-muted">
         <span className="km">ទិន្នន័យចម្ការ និងកំណត់ត្រាបាញ់ថ្នាំ នៅតែរក្សាទុកក្នុងទូរស័ព្ទនេះ។ </span>
         Your farm details and spray records stay on this phone.
       </p>
@@ -122,7 +122,7 @@ function Field({ id, km, en, children }: { id: string; km: string; en: string; c
     <div>
       <label htmlFor={id} className="mb-1.5 block">
         <span className="km text-[15px] font-semibold">{km}</span>
-        <span className="text-[12px] text-muted"> · {en}</span>
+        <span className="text-[14px] text-muted"> · {en}</span>
       </label>
       {children}
     </div>

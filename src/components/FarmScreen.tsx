@@ -53,7 +53,7 @@ export function FarmScreen({
   return (
     <div className="h-full overflow-y-auto px-4 pb-8 pt-4">
       <h2 className="km text-[20px] font-semibold">ចម្ការរបស់ខ្ញុំ</h2>
-      <p className="text-[13px] text-muted">
+      <p className="text-[15px] text-muted">
         <span className="km">ព័ត៌មាននេះរក្សាទុកតែក្នុងទូរស័ព្ទនេះ។</span> Saved only on this phone.
       </p>
       {view !== "details" && needsBackup() && (
@@ -62,12 +62,12 @@ export function FarmScreen({
             setView("details");
             setTimeout(() => document.getElementById("backup")?.scrollIntoView({ behavior: "smooth" }), 50);
           }}
-          className="mt-2 flex w-full items-center gap-2 rounded-xl bg-warn-soft px-3 py-2 text-left text-[13px] text-warn"
+          className="mt-2 flex w-full items-center gap-2 rounded-xl bg-warn-soft px-3 py-2 text-left text-[15px] text-warn"
         >
           <AlertIcon size={15} className="shrink-0" />
           <span className="min-w-0 flex-1">
             <span className="km">បម្រុងទុកកំណត់ត្រា កុំឲ្យបាត់ពេលបាត់ទូរស័ព្ទ ›</span>
-            <span className="block text-[12px] opacity-85">Back up your records so a lost phone doesn't lose them</span>
+            <span className="block text-[14px] opacity-85">Back up your records so a lost phone doesn't lose them</span>
           </span>
         </button>
       )}
@@ -89,8 +89,8 @@ export function FarmScreen({
             onClick={() => setView(id)}
             className={`relative rounded-lg px-1.5 py-2 text-center ${selected ? "bg-brand text-brand-ink" : "text-ink"}`}
           >
-            <span className="km block text-[14px] font-medium">{km}</span>
-            <span className={`block text-[11px] ${selected ? "opacity-85" : "text-muted"}`}>{en}</span>
+            <span className="km block text-[15px] font-medium">{km}</span>
+            <span className={`block text-[13px] ${selected ? "opacity-85" : "text-muted"}`}>{en}</span>
             {id === "journal" && sprays.dueCount > 0 && (
               <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-danger" aria-label="Spray due" />
             )}
@@ -132,7 +132,7 @@ function AccountCard({ account, setAccount, village }: { account: Account; setAc
 
   if (account.status === "registered") {
     return (
-      <p className="mb-6 rounded-xl border border-line bg-surface px-3.5 py-3 text-[13px]">
+      <p className="mb-6 rounded-xl border border-line bg-surface px-3.5 py-3 text-[15px]">
         <span className="km block text-[15px] font-medium">បានចុះឈ្មោះ៖ {account.name}</span>
         <span className="tabular-nums text-muted">Registered · {account.phone}</span>
       </p>
@@ -153,8 +153,8 @@ function AccountCard({ account, setAccount, village }: { account: Account; setAc
       ) : (
         <>
           <p className="km text-[15px] font-medium">អ្នកកំពុងប្រើជាភ្ញៀវ។ ចុះឈ្មោះ ដើម្បីទទួលដំបូន្មាន និងសេវាពីក្រុមការងារយើង។</p>
-          <p className="text-[12px] text-muted">You're using the app as a guest. Register to get advice and services from our team.</p>
-          <button onClick={() => setOpen(true)} className="km mt-3 h-11 rounded-xl bg-brand px-4 text-[15px] text-brand-ink">
+          <p className="text-[14px] text-muted">You're using the app as a guest. Register to get advice and services from our team.</p>
+          <button onClick={() => setOpen(true)} className="km mt-3 h-12 rounded-xl bg-brand px-4 text-[15px] text-brand-ink">
             ចុះឈ្មោះ · Register
           </button>
         </>
@@ -188,7 +188,7 @@ function FarmDetails({ farm, update, onDone }: { farm: Farm; update: (p: Partial
             );
           })}
         </div>
-        <p className="mt-1.5 text-[12px] text-muted">
+        <p className="mt-1.5 text-[14px] text-muted">
           <span className="km">ទើបដាំ = ដាំក្នុងឆ្នាំនេះ</span> · "ទើបដាំ" means planted this year
         </p>
       </Field>
@@ -205,8 +205,8 @@ function FarmDetails({ farm, update, onDone }: { farm: Farm; update: (p: Partial
               }`}
             >
               <span className="km block text-[15px] font-medium">{SOILS[t].km}</span>
-              <span className="km block text-[13px] text-muted">{SOILS[t].detailKm}</span>
-              <span className="block text-[12px] text-muted">
+              <span className="km block text-[15px] text-muted">{SOILS[t].detailKm}</span>
+              <span className="block text-[14px] text-muted">
                 {SOILS[t].en} · {SOILS[t].detailEn}
               </span>
             </button>
@@ -260,7 +260,7 @@ function Field({ km, en, children }: { km: string; en: string; children: React.R
   return (
     <section className="mb-6">
       <h3 className="km text-[16px] font-semibold">{km}</h3>
-      <p className="mb-2.5 text-[12px] text-muted">{en}</p>
+      <p className="mb-2.5 text-[14px] text-muted">{en}</p>
       {children}
     </section>
   );
@@ -273,28 +273,28 @@ function BookFigures({ soil, hectares }: { soil: SoilType; hectares: number | nu
 
   return (
     <section className="mt-6 rounded-2xl border border-line bg-surface p-4">
-      <h3 className="text-[12px] font-semibold uppercase tracking-wide text-brand">
+      <h3 className="text-[14px] font-semibold uppercase tracking-wide text-brand">
         <span className="km normal-case">តាមសៀវភៅ សម្រាប់ដីរបស់អ្នក</span> · From the book, for your soil
       </h3>
       <dl className="mt-3 flex flex-col gap-3">
         <div>
-          <dt className="km text-[13px] text-muted">គម្លាតដាំ · Spacing (ទំព័រ ៣០-៣១)</dt>
+          <dt className="km text-[15px] text-muted">គម្លាតដាំ · Spacing (ទំព័រ ៣០-៣១)</dt>
           <dd className="km text-[15px]">{SPACING[soil].km}</dd>
-          <dd className="text-[12px] text-muted">{SPACING[soil].en}</dd>
+          <dd className="text-[14px] text-muted">{SPACING[soil].en}</dd>
         </div>
         <div>
-          <dt className="km text-[13px] text-muted">ទិន្នផលឆ្នាំទី៥ · Yield in year 5 (ទំព័រ ២)</dt>
+          <dt className="km text-[15px] text-muted">ទិន្នផលឆ្នាំទី៥ · Yield in year 5 (ទំព័រ ២)</dt>
           <dd className="km text-[15px] tabular-nums">
             {kh(lo.toLocaleString("en"))}-{kh(hi.toLocaleString("en"))} គ.ក្រ គ្រាប់ស្ងួត/ហិកតា
             {total && ` · សរុប ${kh(total[0])}-${kh(total[1])} តោន`}
           </dd>
-          <dd className="text-[12px] text-muted tabular-nums">
+          <dd className="text-[14px] text-muted tabular-nums">
             {lo.toLocaleString("en")}-{hi.toLocaleString("en")} kg dry nuts/ha{total && ` · ${total[0]}-${total[1]} t in total`}
           </dd>
         </div>
       </dl>
       {unverified && (
-        <p className="mt-3 flex gap-2 text-[12px] text-warn">
+        <p className="mt-3 flex gap-2 text-[14px] text-warn">
           <AlertIcon size={14} className="mt-0.5 shrink-0" />
           <span>
             <span className="km">តួលេខប៉ាន់ស្មាន មិនទាន់ផ្ទៀងផ្ទាត់ ហើយអាស្រ័យលើអាកាសធាតុ និងការថែទាំ។</span> Estimates, not yet

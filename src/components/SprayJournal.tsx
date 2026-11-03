@@ -91,7 +91,7 @@ export function SprayJournal({
       {sprays.upcoming.length > 0 && (
         <section>
           <h3 className="km text-[17px] font-semibold">ការបាញ់បន្ទាប់</h3>
-          <p className="mb-2.5 text-[12px] text-muted">Next sprays · reminders</p>
+          <p className="mb-2.5 text-[14px] text-muted">Next sprays · reminders</p>
           <ul className="flex flex-col gap-2">
             {sprays.upcoming.map((log) => (
               <UpcomingItem
@@ -107,11 +107,11 @@ export function SprayJournal({
 
       <section>
         <h3 className="km text-[17px] font-semibold">ប្រវត្តិការបាញ់</h3>
-        <p className="mb-2.5 text-[12px] text-muted">Spray history · tap a record to edit</p>
+        <p className="mb-2.5 text-[14px] text-muted">Spray history · tap a record to edit</p>
         {sprays.logs.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-line p-4">
             <p className="km text-[15px]">មិនទាន់មានកំណត់ត្រាទេ។ កត់ត្រារាល់ពេលបាញ់ ដើម្បីដឹងថាបាញ់អ្វី ពេលណា ហើយត្រូវបាញ់ម្ដងទៀតពេលណា។</p>
-            <p className="mt-1 text-[13px] text-muted">
+            <p className="mt-1 text-[15px] text-muted">
               No records yet. Log each spray to keep track of what you used, when, and when the next spray is due.
             </p>
           </div>
@@ -124,8 +124,8 @@ export function SprayJournal({
                   className="w-full rounded-xl border border-line bg-surface px-3.5 py-3 text-left"
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="km text-[13px] text-muted">{formatDate(log.date).km}</span>
-                    <span className="km rounded-full bg-brand-soft px-2 py-0.5 text-[11px] text-brand">
+                    <span className="km text-[15px] text-muted">{formatDate(log.date).km}</span>
+                    <span className="km rounded-full bg-brand-soft px-2 py-0.5 text-[13px] text-brand">
                       {PURPOSES[log.purpose].km}
                       {log.target && ` · ${PEST_TARGETS.find((t) => t.id === log.target)?.km ?? log.target}`}
                     </span>
@@ -138,13 +138,13 @@ export function SprayJournal({
                             <Fragment key={i}>
                               {i > 0 && " + "}
                               {p.name.trim()}
-                              {p.dose && <span className="km text-[13px] font-normal text-muted"> {p.dose}</span>}
+                              {p.dose && <span className="km text-[15px] font-normal text-muted"> {p.dose}</span>}
                             </Fragment>
                           ))
                       : productSummary(log)}
                   </span>
-                  {log.area && <span className="km block text-[13px] text-muted">{log.area}</span>}
-                  {!!log.cost && <span className="km block text-[13px] text-muted tabular-nums">{riel(log.cost).km}</span>}
+                  {log.area && <span className="km block text-[15px] text-muted">{log.area}</span>}
+                  {!!log.cost && <span className="km block text-[15px] text-muted tabular-nums">{riel(log.cost).km}</span>}
                 </button>
               </li>
             ))}
@@ -173,42 +173,42 @@ function UpcomingItem({ log, onLog, onDismiss }: { log: SprayLog; onLog: () => v
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[15px] font-medium">{productSummary(log)}</p>
-          <p className="km text-[13px] text-muted">
+          <p className="km text-[15px] text-muted">
             {date.km} · {date.en}
           </p>
         </div>
         <span
-          className={`km shrink-0 rounded-full px-2.5 py-1 text-[12px] font-medium ${
+          className={`km shrink-0 rounded-full px-2.5 py-1 text-[14px] font-medium ${
             due.overdue ? "bg-danger text-white" : due.soon ? "bg-warn text-white" : "bg-brand-soft text-brand"
           }`}
         >
           {due.km}
         </span>
       </div>
-      <p className="km mt-1 text-[12px] text-muted">
+      <p className="km mt-1 text-[14px] text-muted">
         បាញ់មុន {formatDate(log.date).km} · last sprayed {formatDate(log.date).en}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
-        <button onClick={onLog} className="km h-10 rounded-lg bg-brand px-3.5 text-[14px] text-brand-ink">
+        <button onClick={onLog} className="km h-12 rounded-lg bg-brand px-3.5 text-[15px] text-brand-ink">
           បាញ់រួច កត់ត្រា · Log it
         </button>
         <a
           href={googleCalendarLink(log)}
           target="_blank"
           rel="noreferrer"
-          className="km inline-flex h-10 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 text-[14px]"
+          className="km inline-flex h-12 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 text-[15px]"
         >
           <CalendarIcon size={16} /> Google Calendar
         </a>
-        <button onClick={downloadIcs} className="km h-10 rounded-lg border border-line bg-surface px-3 text-[14px]">
+        <button onClick={downloadIcs} className="km h-12 rounded-lg border border-line bg-surface px-3 text-[15px]">
           iPhone
         </button>
-        <button onClick={onDismiss} className="km h-10 px-2 text-[13px] text-muted underline">
+        <button onClick={onDismiss} className="km h-12 px-2 text-[15px] text-muted underline">
           មិនបាញ់ · Skip
         </button>
       </div>
       {due.overdue && (
-        <p className="km mt-2 text-[12px] text-danger">
+        <p className="km mt-2 text-[14px] text-danger">
           ការបាញ់យឺត ធ្វើឲ្យសត្វល្អិតកើតឡើងវិញ។ · Late follow-up sprays let pests come back.
         </p>
       )}

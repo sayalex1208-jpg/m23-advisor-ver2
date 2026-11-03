@@ -14,7 +14,7 @@ export function ListenButton({ id, text, className = "" }: { id: string; text: s
       type="button"
       onClick={() => (playing ? stopSpeaking() : speak(id, text))}
       aria-pressed={playing}
-      className={`km inline-flex h-10 items-center gap-1.5 rounded-full px-3.5 text-[14px] font-medium ${
+      className={`km inline-flex h-12 items-center gap-1.5 rounded-full px-3.5 text-[15px] font-medium ${
         playing ? "bg-brand text-brand-ink" : "bg-brand-soft text-brand"
       } ${className}`}
     >
@@ -34,7 +34,7 @@ export function Sources({ ids }: { ids: number[] }) {
   return (
     <div className="mt-3 flex flex-col gap-2">
       {needsCheck && (
-        <p className="flex gap-2 rounded-lg bg-warn-soft px-2.5 py-2 text-[13px] text-warn">
+        <p className="flex gap-2 rounded-lg bg-warn-soft px-2.5 py-2 text-[15px] text-warn">
           <AlertIcon size={16} className="mt-1 shrink-0" />
           <span>
             <span className="km block">កម្រិតថ្នាំ និងលេខខាងលើ មិនទាន់បានផ្ទៀងផ្ទាត់។ សូមសួរអ្នកជំនាញ ឬហាងលក់ថ្នាំដែលទុកចិត្ត មុនបាញ់។</span>
@@ -43,7 +43,7 @@ export function Sources({ ids }: { ids: number[] }) {
         </p>
       )}
       {pages.length > 0 && (
-        <p className="flex flex-wrap items-center gap-1.5 text-[12px] text-muted">
+        <p className="flex flex-wrap items-center gap-1.5 text-[14px] text-muted">
           <span className="km">ប្រភព · Source:</span>
           {pages.map((p) => (
             <span key={p.en} className="rounded-full border border-line px-2 py-0.5">
@@ -76,9 +76,9 @@ export function EntryBody({ id, onAsk }: { id: number; onAsk?: (question: string
     <div>
       <ListenButton id={`entry-${id}`} text={e.a_km} className="mb-2" />
       <p className="km text-[15px]">{e.a_km}</p>
-      <p className="mt-2 text-[13px] text-muted">{e.a_en}</p>
+      <p className="mt-2 text-[15px] text-muted">{e.a_en}</p>
       {e.needs_verification && (
-        <p className="mt-3 flex gap-2 rounded-lg bg-warn-soft px-2.5 py-2 text-[13px] text-warn">
+        <p className="mt-3 flex gap-2 rounded-lg bg-warn-soft px-2.5 py-2 text-[15px] text-warn">
           <AlertIcon size={16} className="mt-1 shrink-0" />
           <span>
             <span className="km block">លេខ និងកម្រិតថ្នាំ មិនទាន់បានផ្ទៀងផ្ទាត់។ សូមសួរអ្នកជំនាញមុនប្រើ។</span>
@@ -88,14 +88,14 @@ export function EntryBody({ id, onAsk }: { id: number; onAsk?: (question: string
       )}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         {page ? (
-          <span className="km rounded-full border border-line px-2 py-0.5 text-[12px] text-muted">សៀវភៅ {page.km}</span>
+          <span className="km rounded-full border border-line px-2 py-0.5 text-[14px] text-muted">សៀវភៅ {page.km}</span>
         ) : (
           <span />
         )}
         {onAsk && (
           <button
             onClick={() => onAsk(e.q_km)}
-            className="km inline-flex items-center gap-1.5 rounded-lg border border-brand px-3 py-1.5 text-[14px] text-brand"
+            className="km inline-flex items-center gap-1.5 rounded-lg border border-brand px-3 py-1.5 text-[15px] text-brand"
           >
             <ChatIcon size={16} /> សួរបន្ថែម · Ask more
           </button>
@@ -111,24 +111,24 @@ export type Rating = "up" | "down";
 export function Feedback({ rated, onRate }: { rated?: Rating; onRate: (r: Rating) => void }) {
   if (rated) {
     return (
-      <p className="km mt-3 text-[12px] text-muted">
+      <p className="km mt-3 text-[14px] text-muted">
         អរគុណសម្រាប់មតិ · Thanks for the feedback{rated === "down" && " — we'll improve this answer"}
       </p>
     );
   }
   return (
     <div className="mt-3 flex items-center gap-2 border-t border-line pt-2.5">
-      <span className="km flex-1 text-[12px] text-muted">មានប្រយោជន៍ទេ? · Helpful?</span>
+      <span className="km flex-1 text-[14px] text-muted">មានប្រយោជន៍ទេ? · Helpful?</span>
       <button
         onClick={() => onRate("up")}
-        className="flex h-9 w-11 items-center justify-center rounded-lg border border-line text-brand"
+        className="flex h-12 w-11 items-center justify-center rounded-lg border border-line text-brand"
         aria-label="មានប្រយោជន៍ · Helpful"
       >
         <ThumbUpIcon size={18} />
       </button>
       <button
         onClick={() => onRate("down")}
-        className="flex h-9 w-11 items-center justify-center rounded-lg border border-line text-muted"
+        className="flex h-12 w-11 items-center justify-center rounded-lg border border-line text-muted"
         aria-label="មិនមានប្រយោជន៍ · Not helpful"
       >
         <ThumbDownIcon size={18} />
