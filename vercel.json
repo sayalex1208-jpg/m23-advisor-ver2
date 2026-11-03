@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "functions": {
+    "api/advisor.ts": { "runtime": "nodejs22.x" },
+    "api/feedback.ts": { "runtime": "nodejs22.x" },
+    "api/link.ts": { "runtime": "nodejs22.x" },
+    "api/register.ts": { "runtime": "nodejs22.x" },
+    "api/telegram.ts": { "runtime": "nodejs22.x" },
+    "api/tts.ts": { "runtime": "nodejs22.x" }
+  },
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}
