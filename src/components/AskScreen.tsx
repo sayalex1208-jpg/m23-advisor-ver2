@@ -20,7 +20,7 @@ import { useOnline } from "../lib/pwa";
 import { Feedback, ListenButton, Sources, Thinking, type Rating } from "./AnswerParts";
 import { BookAnswer, NOT_FOUND_KM } from "./BookAnswer";
 import { DiagnosisCard } from "./DiagnosisCard";
-import { CameraIcon, LeafIcon, MicIcon, SendIcon, StopIcon } from "./icons";
+import { CameraIcon, ChatIcon, LeafIcon, MicIcon, SendIcon, StopIcon } from "./icons";
 
 type Message =
   | { kind: "question"; text: string }
@@ -333,15 +333,15 @@ function Welcome({ onPick, ai }: { onPick: (q: string) => void; ai: boolean | nu
   const season = seasonFor(month);
   return (
     <section className="flex flex-col gap-4">
-      <div className="rounded-2xl bg-brand-soft p-4">
+      <div className="rounded-xl bg-brand-soft px-3.5 py-3">
         <div className="flex items-center gap-2 text-brand">
-          <LeafIcon size={20} />
-          <h2 className="km text-[18px] font-semibold">សួរអ្វីក៏បាន អំពីចន្ទី M23</h2>
+          <LeafIcon size={19} />
+          <h2 className="km text-[17px] font-semibold">សួរអ្វីក៏បាន អំពីចន្ទី M23</h2>
         </div>
         <p className="km mt-1 text-[15px]">
           ចម្លើយផ្អែកលើសៀវភៅបច្ចេកទេសដាំចន្ទី។ ថតរូបស្លឹក ផ្កា ឬផ្លែ ដើម្បីរកបញ្ហា ៨ប្រភេទដែលមានក្នុងសៀវភៅ។
         </p>
-        <p className="mt-1 text-[15px] text-muted">
+        <p className="mt-1 text-[14px] text-muted">
           Answers come from a Khmer cashew-growing guidebook. Take a photo to check for 8 documented pests and diseases.
         </p>
         {canListen && (
@@ -381,10 +381,13 @@ function Welcome({ onPick, ai }: { onPick: (q: string) => void; ai: boolean | nu
             <button
               key={e.id}
               onClick={() => onPick(e.q_km)}
-              className="rounded-xl border border-line bg-surface px-3.5 py-3 text-left active:bg-brand-soft"
+              className="flex min-h-14 items-center gap-3 rounded-xl border border-line bg-surface px-3.5 py-3 text-left active:bg-brand-soft"
             >
-              <span className="km block text-[15px]">{e.q_km}</span>
-              <span className="block text-[14px] text-muted">{e.q_en}</span>
+              <span className="min-w-0 flex-1">
+                <span className="km block text-[16px] font-medium">{e.q_km}</span>
+                <span className="mt-0.5 block text-[14px] text-muted">{e.q_en}</span>
+              </span>
+              <ChatIcon size={18} className="shrink-0 text-brand" />
             </button>
           ))}
         </div>

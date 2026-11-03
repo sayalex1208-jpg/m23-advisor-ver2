@@ -10,7 +10,7 @@ import { useFarm } from "./lib/farm";
 import { useInstall, useOnline } from "./lib/pwa";
 import { useHarvests } from "./lib/harvests";
 import { useSprays } from "./lib/sprays";
-import { BookIcon, CalendarIcon, ChatIcon, FarmIcon } from "./components/icons";
+import { BookIcon, CalendarIcon, ChatIcon, DownloadIcon, FarmIcon } from "./components/icons";
 
 type Tab = "month" | "ask" | "guide" | "farm";
 
@@ -55,15 +55,21 @@ export function App() {
 
   return (
     <div className="mx-auto flex h-full max-w-lg flex-col bg-bg pt-[env(safe-area-inset-top)]">
-      <header className="flex shrink-0 items-center gap-2.5 border-b border-line bg-surface px-4 py-3">
-        <img src="/icons/icon.svg" alt="" className="h-12 w-9 shrink-0" />
-        <div className="min-w-0 flex-1 leading-tight">
-          <h1 className="km text-[16px] font-semibold">ជំនួយការចន្ទី M23</h1>
-          <p className="text-[14px] text-muted">M23 Cashew Advisor</p>
+      <header className="flex shrink-0 items-center gap-3 border-b border-line bg-surface px-4 py-2.5">
+        <img src="/icons/icon.svg" alt="" className="h-10 w-10 shrink-0 rounded-[10px]" />
+        <div className="min-w-0 flex-1">
+          <h1 className="km truncate text-[16px] font-semibold leading-snug">ជំនួយការចន្ទី M23</h1>
+          <p className="truncate text-[12px] font-medium uppercase tracking-wider text-muted">
+            Cashew Advisor
+          </p>
         </div>
         {install.canInstall && (
-          <button onClick={install.install} className="km shrink-0 rounded-lg border border-brand px-3 py-1.5 text-[15px] text-brand">
-            ដំឡើង · Install
+          <button
+            onClick={install.install}
+            className="km flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-brand/40 bg-brand-soft px-3 text-[14px] font-medium text-brand"
+          >
+            <DownloadIcon size={15} />
+            ដំឡើង
           </button>
         )}
       </header>
@@ -167,7 +173,7 @@ export function App() {
             key={id}
             onClick={() => setTab(id)}
             aria-current={tab === id ? "page" : undefined}
-            className={`flex flex-col items-center gap-0.5 py-2 ${tab === id ? "text-brand" : "text-muted"}`}
+            className={`flex flex-col items-center gap-0.5 py-2 transition-colors ${tab === id ? "text-brand" : "text-muted active:bg-bg-sunken"}`}
           >
             <span className="relative">
               <Icon size={22} />

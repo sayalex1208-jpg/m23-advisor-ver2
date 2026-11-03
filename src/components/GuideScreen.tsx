@@ -57,7 +57,7 @@ export function GuideScreen({ onAsk }: { onAsk: (question: string) => void }) {
           placeholder="ស្វែងរក ឧ. មូសតែ, ជី, Thiourea…"
           className="km h-12 w-full rounded-xl border border-line bg-surface px-3.5 text-[16px] outline-none placeholder:text-muted focus:border-brand"
         />
-        <div className="-mx-4 mt-2.5 flex gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none]">
+        <div className="-mx-4 mt-2.5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <Chip active={!sectionKey} onClick={() => setSectionKey(null)} label="ទាំងអស់" />
           {SECTIONS.map((s) => (
             <Chip key={s.key} active={sectionKey === s.key} onClick={() => setSectionKey(s.key)} label={s.km} />
@@ -114,10 +114,17 @@ function Chip({ active, onClick, label }: { active: boolean; onClick: () => void
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`km shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-[15px] ${
-        active ? "border-brand bg-brand text-brand-ink" : "border-line bg-surface text-ink"
+      className={`km flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-2 text-[15px] transition-colors ${
+        active
+          ? "border-brand bg-brand font-medium text-brand-ink"
+          : "border-line bg-surface text-ink active:bg-brand-soft"
       }`}
     >
+      {active && (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M5 12.5l4.5 4.5L19 7" />
+        </svg>
+      )}
       {label}
     </button>
   );

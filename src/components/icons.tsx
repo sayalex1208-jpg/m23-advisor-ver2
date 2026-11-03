@@ -175,3 +175,10 @@ export const StopIcon = (p: IconProps) => (
     <rect x="6" y="6" width="12" height="12" rx="2" />
   </Svg>
 );
+
+export const DownloadIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5" />
+    <path d="M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17" />
+  </Svg>
+);

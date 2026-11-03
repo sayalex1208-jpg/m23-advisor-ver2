@@ -117,10 +117,15 @@ export function LocationField({
                 onChange({ lat: p.lat, lon: p.lon, accuracy: null, label: p.km, capturedAt: new Date().toISOString() })
               }
               aria-pressed={selected}
-              className={`km rounded-full border px-3 py-1.5 text-[15px] ${
-                selected ? "border-brand bg-brand text-brand-ink" : "border-line bg-surface"
+              className={`km flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-[15px] transition-colors ${
+                selected ? "border-brand bg-brand font-medium text-brand-ink" : "border-line bg-surface active:bg-brand-soft"
               }`}
             >
+              {selected && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M5 12.5l4.5 4.5L19 7" />
+                </svg>
+              )}
               {p.km}
             </button>
           );

@@ -179,8 +179,10 @@ function FarmDetails({ farm, update, onDone }: { farm: Farm; update: (p: Partial
                 key={a}
                 onClick={() => update({ plantedYear: thisYear - a })}
                 aria-pressed={selected}
-                className={`km h-12 rounded-xl border text-[15px] ${a === 0 ? "col-span-2" : ""} ${
-                  selected ? "border-brand bg-brand text-brand-ink" : "border-line bg-surface"
+                className={`km h-12 rounded-lg border text-[16px] transition-colors ${a === 0 ? "col-span-2" : ""} ${
+                  selected
+                    ? "border-brand bg-brand font-semibold text-brand-ink"
+                    : "border-line bg-surface active:bg-brand-soft"
                 }`}
               >
                 {a === 0 ? "ទើបដាំ" : a === 8 ? `${kh(8)}+` : kh(a)}
@@ -200,14 +202,26 @@ function FarmDetails({ farm, update, onDone }: { farm: Farm; update: (p: Partial
               key={t}
               onClick={() => update({ soil: t })}
               aria-pressed={farm.soil === t}
-              className={`rounded-xl border px-3.5 py-3 text-left ${
-                farm.soil === t ? "border-brand bg-brand-soft" : "border-line bg-surface"
+              className={`flex items-start gap-2.5 rounded-lg border px-3.5 py-3 text-left transition-colors ${
+                farm.soil === t ? "border-brand bg-brand-soft" : "border-line bg-surface active:bg-bg-sunken"
               }`}
             >
-              <span className="km block text-[15px] font-medium">{SOILS[t].km}</span>
-              <span className="km block text-[15px] text-muted">{SOILS[t].detailKm}</span>
-              <span className="block text-[14px] text-muted">
-                {SOILS[t].en} · {SOILS[t].detailEn}
+              <span
+                className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+                  farm.soil === t ? "border-brand bg-brand" : "border-line"
+                }`}
+                aria-hidden="true"
+              >
+                {farm.soil === t && <span className="h-2 w-2 rounded-full bg-brand-ink" />}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className={`km block text-[16px] ${farm.soil === t ? "font-semibold" : "font-medium"}`}>
+                  {SOILS[t].km}
+                </span>
+                <span className="km block text-[15px] text-muted">{SOILS[t].detailKm}</span>
+                <span className="block text-[14px] text-muted">
+                  {SOILS[t].en} · {SOILS[t].detailEn}
+                </span>
               </span>
             </button>
           ))}
@@ -224,7 +238,7 @@ function FarmDetails({ farm, update, onDone }: { farm: Farm; update: (p: Partial
           value={farm.hectares ?? ""}
           onChange={(e) => update({ hectares: e.target.value === "" ? null : Math.max(0, Number(e.target.value)) })}
           placeholder="ឧ. 2"
-          className="h-12 w-32 rounded-xl border border-line bg-surface px-3.5 text-[16px] outline-none focus:border-brand"
+          className="h-12 w-32 rounded-lg border border-line bg-surface px-3.5 text-[16px] outline-none focus:border-brand"
         />
       </Field>
 
@@ -239,7 +253,7 @@ function FarmDetails({ farm, update, onDone }: { farm: Farm; update: (p: Partial
           value={farm.village}
           onChange={(e) => update({ village: e.target.value })}
           placeholder="ឧ. ឃុំខ្នារសណ្ដាយ"
-          className="km h-12 w-full rounded-xl border border-line bg-surface px-3.5 text-[16px] outline-none focus:border-brand"
+          className="km h-12 w-full rounded-lg border border-line bg-surface px-3.5 text-[16px] outline-none focus:border-brand"
         />
       </Field>
 
@@ -248,7 +262,7 @@ function FarmDetails({ farm, update, onDone }: { farm: Farm; update: (p: Partial
       <button
         onClick={onDone}
         disabled={age === null || farm.soil === null}
-        className="km mt-6 h-12 w-full rounded-xl bg-brand text-[16px] font-medium text-brand-ink disabled:opacity-40"
+        className="km mt-6 h-12 w-full rounded-lg bg-brand text-[16px] font-semibold text-brand-ink disabled:opacity-40"
       >
         មើលការងារខែនេះ · See this month's tasks
       </button>
@@ -259,7 +273,7 @@ function FarmDetails({ farm, update, onDone }: { farm: Farm; update: (p: Partial
 function Field({ km, en, children }: { km: string; en: string; children: React.ReactNode }) {
   return (
     <section className="mb-6">
-      <h3 className="km text-[16px] font-semibold">{km}</h3>
+      <h3 className="km text-[17px] font-semibold leading-snug">{km}</h3>
       <p className="mb-2.5 text-[14px] text-muted">{en}</p>
       {children}
     </section>
